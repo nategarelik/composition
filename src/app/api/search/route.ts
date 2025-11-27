@@ -78,7 +78,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           success: false,
           error: {
             code: 'INVALID_QUERY',
-            message: parseResult.error.errors[0]?.message ?? 'Invalid query',
+            message: parseResult.error.issues[0]?.message ?? 'Invalid query',
           },
         },
         { status: 400 }

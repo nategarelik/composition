@@ -22,7 +22,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           success: false,
           error: {
             code: 'INVALID_REQUEST',
-            message: parseResult.error.errors[0]?.message ?? 'Invalid request',
+            message: parseResult.error.issues[0]?.message ?? 'Invalid request',
           },
         },
         { status: 400 }
