@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Composition {
+  id           String   @id @default(cuid())
+  query        String   @db.Text
+  queryNorm    String   @map("query_norm")
+  name         String
+  category     String
+  description  String?  @db.Text
+  rootData     Json     @map("root_data")
+  sourcesData  Json     @map("sources_data")
+  confidence   String
+  viewCount    Int      @default(0) @map("view_count")
+  shareCount   Int      @default(0) @map("share_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  researchedAt DateTime @map("researched_at")
+  shares       Share[]
+
+  @@index([queryNorm])
+  @@index([category])
+  @@map("compositions")
+}
+
+model Share {
+  id            String      @id @default(cuid())
+  shortCode     String      @unique @map("short_code")
+  compositionId String      @map("composition_id")
+  composition   Composition @relation(fields: [compositionId], references: [id], onDelete: Cascade)
+  depthLevel    Int         @default(4) @map("depth_level")
+  viewMode      String      @default("exploded") @map("view_mode")
+  viewCount     Int         @default(0) @map("view_count")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([shortCode])
+  @@map("shares")
+}
