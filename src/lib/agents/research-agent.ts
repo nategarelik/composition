@@ -133,19 +133,37 @@ export async function researchComposition(
     message: 'Researching composition data...',
   })
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: 'user',
-        content: `Research the complete composition of: ${query}
+  let message: Anthropic.Message
+  try {
+    message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929', // Claude Sonnet 4.5
+      max_tokens: 8192,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: `Research the complete composition of: ${query}
 
 Break it down from the product level to component level to materials to chemicals to elements where applicable. Be thorough and include all major components with their approximate percentages.`,
-      },
-    ],
-  })
+        },
+      ],
+    })
+  } catch (error) {
+    // Provide more specific error messages
+    if (error instanceof Anthropic.APIError) {
+      console.error('Anthropic API Error:', error.status, error.message)
+      if (error.status === 401) {
+        throw new Error('Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY configuration.')
+      } else if (error.status === 404) {
+        throw new Error('Anthropic API model not found. The specified model may not exist.')
+      } else if (error.status === 429) {
+        throw new Error('Anthropic API rate limit exceeded. Please try again later.')
+      }
+      throw new Error(`Anthropic API error: ${error.message}`)
+    }
+    console.error('Research error:', error)
+    throw error
+  }
 
   onProgress?.({
     stage: 'analyzing',
