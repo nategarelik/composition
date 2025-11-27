@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo, useEffect } from 'react'
 import { useFrame, ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { CompositionNode as NodeType } from '@/types'
@@ -53,6 +53,25 @@ export function CompositionNodeMesh({
   const material = typeMaterials[node.type]
   const targetScale = hovered ? 1.15 : isSelected ? 1.1 : 1
 
+  // Memoize geometry to prevent memory leaks
+  const geometry = useMemo(() => new THREE.SphereGeometry(size, 32, 32), [size])
+
+  // Cleanup geometry on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      geometry.dispose()
+    }
+  }, [geometry])
+
+  // Cleanup cursor on unmount
+  useEffect(() => {
+    return () => {
+      if (hovered) {
+        document.body.style.cursor = 'auto'
+      }
+    }
+  }, [hovered])
+
   useFrame(() => {
     // Smooth position animation
     if (groupRef.current) {
@@ -95,11 +114,11 @@ export function CompositionNodeMesh({
     <group ref={groupRef}>
       <mesh
         ref={meshRef}
+        geometry={geometry}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
         onClick={handleClick}
       >
-        <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial
           color={color}
           metalness={material.metalness}

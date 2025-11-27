@@ -54,14 +54,19 @@ export async function GET(
       )
     }
 
-    // Update view count
-    await db.composition.update({
-      where: { id },
-      data: { viewCount: { increment: 1 } },
-    })
-
     const composition = dbToComposition(record)
+
+    // Cache first, then update view count async (fire and forget)
+    // This prevents the race condition of caching stale view counts
     await setCache(cacheKeys.compositionById(id), composition, 86400)
+
+    // Update view count asynchronously - don't await
+    db.composition
+      .update({
+        where: { id },
+        data: { viewCount: { increment: 1 } },
+      })
+      .catch((err) => console.error('Failed to increment view count:', err))
 
     return NextResponse.json({
       success: true,

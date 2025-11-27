@@ -1,25 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { nanoid } from 'nanoid'
+import { z } from 'zod'
 import { researchComposition } from '@/lib/agents'
 import { db } from '@/lib/db'
 import { getCached, setCache, cacheKeys } from '@/lib/redis'
-import type { ApiResponse, SearchResponse } from '@/types'
+import type { ApiResponse, SearchResponse, CompositionNode, Source, ConfidenceLevel } from '@/types'
 import type { Composition as DbComposition } from '@prisma/client'
+
+// Zod schema for request validation
+const searchRequestSchema = z.object({
+  query: z
+    .string()
+    .min(2, 'Query must be at least 2 characters')
+    .max(200, 'Query must be less than 200 characters')
+    .transform((q) => q.trim().replace(/[<>{}]/g, '')), // Sanitize dangerous chars
+})
+
+// Zod schema for database JSON fields
+const compositionNodeSchema: z.ZodType<CompositionNode> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    type: z.enum(['product', 'component', 'material', 'chemical', 'element']),
+    percentage: z.number(),
+    confidence: z.enum(['verified', 'estimated', 'speculative']),
+    description: z.string().optional(),
+    symbol: z.string().optional(),
+    atomicNumber: z.number().optional(),
+    casNumber: z.string().optional(),
+    children: z.array(compositionNodeSchema).optional(),
+  })
+)
+
+const sourceSchema: z.ZodType<Source> = z.object({
+  id: z.string(),
+  type: z.enum(['official', 'scientific', 'database', 'calculated', 'estimated']),
+  name: z.string(),
+  url: z.string().optional(),
+  accessedAt: z.string(),
+  confidence: z.enum(['verified', 'estimated', 'speculative']),
+  notes: z.string().optional(),
+})
 
 function normalizeQuery(query: string): string {
   return query.trim().toLowerCase().replace(/\s+/g, '-')
 }
 
 function dbToComposition(record: DbComposition) {
+  // Parse and validate JSON fields
+  const root = compositionNodeSchema.parse(record.rootData)
+  const sources = z.array(sourceSchema).parse(record.sourcesData)
+
   return {
     id: record.id,
     query: record.query,
     name: record.name,
     category: record.category,
     description: record.description ?? undefined,
-    root: record.rootData as ReturnType<typeof JSON.parse>,
-    sources: record.sourcesData as ReturnType<typeof JSON.parse>,
-    confidence: record.confidence as 'verified' | 'estimated' | 'speculative',
+    root,
+    sources,
+    confidence: record.confidence as ConfidenceLevel,
     researchedAt: record.researchedAt.toISOString(),
     viewCount: record.viewCount,
     shareCount: record.shareCount,
@@ -28,22 +68,24 @@ function dbToComposition(record: DbComposition) {
 
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<SearchResponse>>> {
   try {
-    const body = await request.json() as { query?: string }
-    const { query } = body
+    // Parse and validate request body
+    const body = await request.json()
+    const parseResult = searchRequestSchema.safeParse(body)
 
-    // Validate
-    if (!query || query.trim().length < 2) {
+    if (!parseResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'INVALID_QUERY',
-            message: 'Query must be at least 2 characters',
+            message: parseResult.error.errors[0]?.message ?? 'Invalid query',
           },
         },
         { status: 400 }
       )
     }
+
+    const { query } = parseResult.data
 
     const normalized = normalizeQuery(query)
 

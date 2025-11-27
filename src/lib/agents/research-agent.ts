@@ -2,7 +2,20 @@ import Anthropic from '@anthropic-ai/sdk'
 import { nanoid } from 'nanoid'
 import type { CompositionNode, Source, ConfidenceLevel, ResearchResult, ResearchProgress } from '@/types'
 
-const anthropic = new Anthropic()
+// Validate API key at module load time
+function createAnthropicClient(): Anthropic {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error(
+      'ANTHROPIC_API_KEY environment variable is required. ' +
+        'Please set it in your .env.local file or deployment environment.'
+    )
+  }
+  return new Anthropic({ apiKey })
+}
+
+// Create client - will throw early if API key is missing
+const anthropic = createAnthropicClient()
 
 const SYSTEM_PROMPT = `You are an expert research agent specializing in discovering what things are made of. Your task is to break down any product, substance, or entity into its constituent parts in a hierarchical structure.
 

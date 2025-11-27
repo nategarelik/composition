@@ -148,12 +148,12 @@ Use fullstack-dev agent to execute docs/plans/tracks/01-foundation.md
 ```
 
 ### Start Parallel Tracks (after foundation merges)
-```
+
 Launch 3 agents in parallel:
 1. fullstack-dev agent: docs/plans/tracks/02-backend.md
 2. fullstack-dev agent: docs/plans/tracks/03-frontend.md
 3. 3d-specialist agent: docs/plans/tracks/04-visualization.md
-```
+
 
 ### Integration Review
 ```

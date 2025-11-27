@@ -1,31 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { nanoid } from 'nanoid'
+import { z } from 'zod'
 import { db } from '@/lib/db'
 import type { ApiResponse, ShareResponse } from '@/types'
 
-interface ShareRequestBody {
-  compositionId: string
-  depthLevel?: number
-  viewMode?: string
-}
+// Zod schema for request validation
+const shareRequestSchema = z.object({
+  compositionId: z.string().min(1, 'compositionId is required').max(50),
+  depthLevel: z.number().int().min(1).max(10).default(4),
+  viewMode: z.enum(['exploded', 'compact', 'slice']).default('exploded'),
+})
 
 export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<ShareResponse>>> {
   try {
-    const body = await request.json() as ShareRequestBody
-    const { compositionId, depthLevel = 4, viewMode = 'exploded' } = body
+    const body = await request.json()
+    const parseResult = shareRequestSchema.safeParse(body)
 
-    if (!compositionId) {
+    if (!parseResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'INVALID_REQUEST',
-            message: 'compositionId is required',
+            message: parseResult.error.errors[0]?.message ?? 'Invalid request',
           },
         },
         { status: 400 }
       )
     }
+
+    const { compositionId, depthLevel, viewMode } = parseResult.data
 
     // Verify composition exists
     const composition = await db.composition.findUnique({
