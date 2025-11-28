@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSearchStore, useCompositionStore } from '@/stores'
 import { SearchProgress } from '@/components/search'
@@ -10,8 +10,11 @@ export function SearchPageClient() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const query = searchParams?.get('q') ?? null
-  const { updateProgress, setError, isSearching, startSearch } = useSearchStore()
+  const { updateProgress, setError, startSearch } = useSearchStore()
   const { setComposition } = useCompositionStore()
+
+  // Track if search has been initiated to prevent duplicate calls
+  const searchInitiatedRef = useRef(false)
 
   useEffect(() => {
     if (!query) {
@@ -19,11 +22,16 @@ export function SearchPageClient() {
       return
     }
 
-    async function performSearch() {
-      if (!isSearching) {
-        startSearch()
-      }
+    // Prevent duplicate searches when dependencies change
+    if (searchInitiatedRef.current) {
+      return
+    }
+    searchInitiatedRef.current = true
 
+    let cancelled = false
+
+    async function performSearch() {
+      startSearch()
       updateProgress('researching', 20, `Researching "${query}"...`)
 
       try {
@@ -32,6 +40,9 @@ export function SearchPageClient() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query }),
         })
+
+        // Don't update state if component unmounted
+        if (cancelled) return
 
         const data = await response.json() as ApiResponse<SearchResponse>
 
@@ -43,12 +54,20 @@ export function SearchPageClient() {
           setError(data.error?.message ?? 'Failed to research composition')
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Network error')
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Network error')
+        }
       }
     }
 
     performSearch()
-  }, [query, router, updateProgress, setError, setComposition, isSearching, startSearch])
+
+    return () => {
+      cancelled = true
+    }
+    // Only re-run when query changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4">

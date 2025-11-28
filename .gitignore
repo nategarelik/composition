@@ -50,3 +50,6 @@ secrets/
 
 .vercel
 .env*.local
+
+# Windows NUL device workaround (created accidentally)
+nul

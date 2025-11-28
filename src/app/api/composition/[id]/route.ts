@@ -1,24 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCached, setCache, cacheKeys } from '@/lib/redis'
+import { CACHE_TTL } from '@/lib/constants'
+import { dbToComposition } from '@/lib/validators'
 import type { ApiResponse, CompositionResponse } from '@/types'
-import type { Composition as DbComposition } from '@prisma/client'
-
-function dbToComposition(record: DbComposition) {
-  return {
-    id: record.id,
-    query: record.query,
-    name: record.name,
-    category: record.category,
-    description: record.description ?? undefined,
-    root: record.rootData as ReturnType<typeof JSON.parse>,
-    sources: record.sourcesData as ReturnType<typeof JSON.parse>,
-    confidence: record.confidence as 'verified' | 'estimated' | 'speculative',
-    researchedAt: record.researchedAt.toISOString(),
-    viewCount: record.viewCount,
-    shareCount: record.shareCount,
-  }
-}
 
 export async function GET(
   _request: NextRequest,
@@ -58,7 +43,7 @@ export async function GET(
 
     // Cache first, then update view count async (fire and forget)
     // This prevents the race condition of caching stale view counts
-    await setCache(cacheKeys.compositionById(id), composition, 86400)
+    await setCache(cacheKeys.compositionById(id), composition, CACHE_TTL.COMPOSITION_BY_ID)
 
     // Update view count asynchronously - don't await
     db.composition
