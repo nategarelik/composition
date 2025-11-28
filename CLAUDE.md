@@ -183,6 +183,57 @@ When a user searches for something:
 
 ---
 
+## Current Transformation: Clinical Lab Terminal UI
+
+### Vision
+Transform the MVP into a stunning **Clinical Lab Terminal** - a professional research analysis workstation with:
+- Mission control elements (data streams, system status, live readouts)
+- 3D design software controls (Blender/Figma-like tool panels)
+- Research terminal aesthetic (monospace fonts, command-line inspired)
+
+### Design System Quick Reference
+
+**Colors (CSS Variables)**
+```css
+--bg-primary: #0a0b0d;        /* Near black */
+--bg-secondary: #101214;      /* Panel backgrounds */
+--accent-primary: #3b9eff;    /* Clinical blue */
+--accent-secondary: #00d4aa;  /* Teal - success */
+--text-primary: #f0f2f5;      /* White */
+--text-mono: #00ff88;         /* Terminal green */
+```
+
+**Typography**
+- UI: `font-sans` (Inter)
+- Data/code: `font-mono` (JetBrains Mono)
+
+**Key Components**
+- Home: Analysis Terminal with system status, specimen input, activity log
+- Viewer: 3D Workstation with menu bar, toolbar, properties panel, hierarchy tree
+
+### Implementation Phases
+1. **UI Foundation** - Design system, layout shell, home page
+2. **Tree Navigation** - Hierarchy panel, tree-3D sync
+3. **3D Enhancement** - Molecular viz, procedural shapes
+4. **Chat System** - Bottom panel chat, streaming API
+5. **Polish** - Animations, mobile, performance
+
+### Commands Available
+- `/phase [1-5]` - Execute a transformation phase
+- `/build-component [path] [type]` - Create new component
+- `/verify` - Run full verification suite
+- `/design-review` - Check design system compliance
+- `/research [query]` - Research composition data
+
+### Best Practices for This Project
+- Use `/clear` every 8-12 tasks (Opus 4.5 context management)
+- Use "ultrathink" or "think harder" for complex architectural decisions
+- Prefer `sonnet` subagents for faster iteration on simple tasks
+- Run `/verify` before each commit
+- Use parallel agents for independent tasks
+
+---
+
 ## Session Log
 
 ### 2025-11-27: MVP Implementation & Code Review

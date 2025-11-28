@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCompositionStore } from '@/stores'
 import { ViewerControls, NodeTooltip } from '@/components/viewer'
+import { ChatDrawer } from '@/components/chat'
 import type { Composition } from '@/types'
 
 // Dynamically import Canvas to avoid SSR issues with drei
@@ -126,6 +127,9 @@ export function CompositionViewerClient({ composition }: CompositionViewerClient
           </div>
         </div>
       </div>
+
+      {/* Chat Drawer */}
+      <ChatDrawer composition={composition} />
     </main>
   )
 }

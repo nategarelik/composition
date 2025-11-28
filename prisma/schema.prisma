@@ -42,3 +42,52 @@ model Share {
   @@index([shortCode])
   @@map("shares")
 }
+
+// ============================================
+// Chat Models
+// ============================================
+
+model Conversation {
+  id            String    @id @default(cuid())
+  compositionId String    @map("composition_id")
+  sessionId     String?   @map("session_id") // Anonymous session tracking
+  userId        String?   @map("user_id") // Optional authenticated user
+  messages      Message[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([compositionId])
+  @@index([sessionId])
+  @@index([userId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // 'user' | 'assistant' | 'system'
+  content        String       @db.Text
+  nodeReferences Json?        @map("node_references") // Array of referenced node IDs
+  tokens         Int?         // Token count for analytics
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model PopularQA {
+  id            String   @id @default(cuid())
+  compositionId String   @map("composition_id")
+  question      String   @db.Text
+  answer        String   @db.Text
+  askCount      Int      @default(1) @map("ask_count")
+  helpfulCount  Int      @default(0) @map("helpful_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([compositionId, question])
+  @@index([compositionId])
+  @@index([askCount])
+  @@map("popular_qa")
+}

@@ -1,49 +1,58 @@
 'use client'
 
 import { useRef, useState, useMemo, useEffect } from 'react'
-import { useFrame, ThreeEvent } from '@react-three/fiber'
+import { ThreeEvent } from '@react-three/fiber'
+import { animated, useSpring } from '@react-spring/three'
 import * as THREE from 'three'
 import type { CompositionNode as NodeType } from '@/types'
 import { useCompositionStore } from '@/stores'
-import {
-  calculateNodeSize,
-  calculateExplodedPosition,
-  getNodeColor,
-  typeMaterials,
-} from '@/lib/three/composition-utils'
+import { calculateNodeSize, calculateExplodedPosition } from '@/lib/three/composition-utils'
+import { MolecularNode } from './molecular-node'
+import { ProceduralNode } from './procedural-node'
 
-interface CompositionNodeMeshProps {
+interface HybridNodeProps {
   node: NodeType
   depth: number
   index: number
   siblingCount: number
-  isExploded: boolean
   parentPosition?: [number, number, number]
 }
 
-export function CompositionNodeMesh({
+// Determine if a node should use molecular visualization
+function shouldUseMolecular(node: NodeType): boolean {
+  return node.type === 'chemical' || node.type === 'element'
+}
+
+export function HybridNode({
   node,
   depth,
   index,
   siblingCount,
-  isExploded,
   parentPosition = [0, 0, 0],
-}: CompositionNodeMeshProps) {
-  const meshRef = useRef<THREE.Mesh>(null)
+}: HybridNodeProps) {
   const groupRef = useRef<THREE.Group>(null)
   const [hovered, setHovered] = useState(false)
+
+  // Store selectors
   const selectNode = useCompositionStore((s) => s.selectNode)
   const setHoveredNode = useCompositionStore((s) => s.setHoveredNode)
   const setFocusedNode = useCompositionStore((s) => s.setFocusedNode)
   const toggleNodeExpansion = useCompositionStore((s) => s.toggleNodeExpansion)
   const expandToNode = useCompositionStore((s) => s.expandToNode)
   const selectedNode = useCompositionStore((s) => s.selectedNode)
+  const expandedNodes = useCompositionStore((s) => s.expandedNodes)
+  const isExplodedGlobal = useCompositionStore((s) => s.isExploded)
+
   const isSelected = selectedNode?.id === node.id
   const hasChildren = node.children && node.children.length > 0
 
+  // Per-node explosion: check if THIS node is exploded
+  const isNodeExploded = expandedNodes.has(node.id) || isExplodedGlobal
+
+  // Calculate target position for this node
   const offset = useMemo(
-    () => calculateExplodedPosition(index, siblingCount, depth, isExploded),
-    [index, siblingCount, depth, isExploded]
+    () => calculateExplodedPosition(index, siblingCount, depth, depth > 0 && (isExplodedGlobal || expandedNodes.has(node.id))),
+    [index, siblingCount, depth, isExplodedGlobal, expandedNodes, node.id]
   )
 
   const targetPosition: [number, number, number] = useMemo(() => [
@@ -53,19 +62,25 @@ export function CompositionNodeMesh({
   ], [parentPosition, offset])
 
   const size = calculateNodeSize(node.percentage, depth)
-  const color = getNodeColor(node)
-  const material = typeMaterials[node.type]
-  const targetScale = hovered ? 1.15 : isSelected ? 1.1 : 1
 
-  // Memoize geometry to prevent memory leaks
-  const geometry = useMemo(() => new THREE.SphereGeometry(size, 32, 32), [size])
+  // Spring animation for position
+  const { position } = useSpring({
+    position: targetPosition,
+    config: {
+      mass: 1,
+      tension: 170,
+      friction: 26,
+    },
+  })
 
-  // Cleanup geometry on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      geometry.dispose()
-    }
-  }, [geometry])
+  // Spring animation for scale (hover/select)
+  const { scale } = useSpring({
+    scale: hovered ? 1.15 : isSelected ? 1.1 : 1,
+    config: {
+      tension: 300,
+      friction: 20,
+    },
+  })
 
   // Cleanup cursor on unmount
   useEffect(() => {
@@ -75,26 +90,6 @@ export function CompositionNodeMesh({
       }
     }
   }, [hovered])
-
-  useFrame(() => {
-    // Smooth position animation
-    if (groupRef.current) {
-      groupRef.current.position.x += (targetPosition[0] - groupRef.current.position.x) * 0.1
-      groupRef.current.position.y += (targetPosition[1] - groupRef.current.position.y) * 0.1
-      groupRef.current.position.z += (targetPosition[2] - groupRef.current.position.z) * 0.1
-    }
-
-    // Smooth scale animation and rotation on hover
-    if (meshRef.current) {
-      const currentScale = meshRef.current.scale.x
-      const newScale = currentScale + (targetScale - currentScale) * 0.1
-      meshRef.current.scale.setScalar(newScale)
-
-      if (hovered) {
-        meshRef.current.rotation.y += 0.01
-      }
-    }
-  })
 
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
@@ -112,51 +107,66 @@ export function CompositionNodeMesh({
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
     selectNode(node)
-    // Also expand tree to this node for sync
     expandToNode(node.id)
   }
 
   const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
-    // Double-click: Focus camera on this node and toggle expansion
     setFocusedNode(node.id)
     if (hasChildren) {
       toggleNodeExpansion(node.id)
     }
   }
 
+  const useMolecular = shouldUseMolecular(node)
+
   return (
-    <group ref={groupRef}>
+    <animated.group
+      ref={groupRef}
+      position={position as unknown as THREE.Vector3}
+      scale={scale}
+    >
+      {/* Invisible hit area for interaction */}
       <mesh
-        ref={meshRef}
-        geometry={geometry}
         userData={{ nodeId: node.id }}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
+        visible={false}
       >
-        <meshStandardMaterial
-          color={color}
-          metalness={material.metalness}
-          roughness={material.roughness}
-          emissive={hovered || isSelected ? color : '#000000'}
-          emissiveIntensity={hovered ? 0.4 : isSelected ? 0.2 : 0}
-        />
+        <sphereGeometry args={[size * 1.5, 8, 8]} />
+        <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* Render children */}
-      {node.children?.map((child, i) => (
-        <CompositionNodeMesh
+      {/* Render molecular or procedural based on type */}
+      {useMolecular ? (
+        <MolecularNode
+          node={node}
+          size={size}
+          isHovered={hovered}
+          isSelected={isSelected}
+        />
+      ) : (
+        <ProceduralNode
+          node={node}
+          size={size}
+          isHovered={hovered}
+          isSelected={isSelected}
+        />
+      )}
+
+      {/* Render children when node is exploded */}
+      {isNodeExploded && node.children?.map((child, i) => (
+        <HybridNode
           key={child.id}
           node={child}
           depth={depth + 1}
           index={i}
           siblingCount={node.children?.length ?? 0}
-          isExploded={isExploded}
-          parentPosition={offset}
+          parentPosition={[0, 0, 0]} // Children position relative to parent group
         />
       ))}
-    </group>
+    </animated.group>
   )
 }
