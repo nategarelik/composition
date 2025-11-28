@@ -1,7 +1,7 @@
-export { CompositionTreePanel } from './composition-tree-panel'
-export { TreeNode } from './tree-node'
-export { TreeNodeElement } from './tree-node-element'
-export { TreeNodeChemical } from './tree-node-chemical'
-export { TreeNodeMaterial } from './tree-node-material'
-export { TreeNodeComponent } from './tree-node-component'
-export { VirtualTree } from './virtual-tree'
+export { CompositionTreePanel } from "./composition-tree-panel";
+export { TreeNode } from "./tree-node";
+export { TreeNodeElement } from "./tree-node-element";
+export { TreeNodeChemical } from "./tree-node-chemical";
+export { TreeNodeMaterial } from "./tree-node-material";
+export { TreeNodeComponent } from "./tree-node-component";
+export { VirtualTree } from "./virtual-tree";

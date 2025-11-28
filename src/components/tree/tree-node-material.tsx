@@ -1,25 +1,29 @@
-'use client'
+"use client";
 
-import type { CompositionNode } from '@/types'
-import { cn } from '@/lib/utils'
+import type { CompositionNode } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface TreeNodeMaterialProps {
-  node: CompositionNode
-  isSelected: boolean
-  isHovered: boolean
+  node: CompositionNode;
+  isSelected: boolean;
+  isHovered: boolean;
 }
 
 // Material-specific display with material properties
-export function TreeNodeMaterial({ node, isSelected, isHovered }: TreeNodeMaterialProps) {
-  const materialType = node.metadata?.materialType as string | undefined
-  const source = node.metadata?.source as string | undefined
+export function TreeNodeMaterial({
+  node,
+  isSelected,
+  isHovered,
+}: TreeNodeMaterialProps) {
+  const materialType = node.metadata?.materialType as string | undefined;
+  const source = node.metadata?.source as string | undefined;
 
   return (
     <div
       className={cn(
-        'flex items-center gap-2 px-2 py-1 rounded',
-        isSelected && 'ring-1 ring-layer-material/50',
-        isHovered && 'bg-layer-material/5'
+        "flex items-center gap-2 px-2 py-1 rounded",
+        isSelected && "ring-1 ring-layer-material/50",
+        isHovered && "bg-layer-material/5",
       )}
     >
       {/* Material Icon */}
@@ -49,12 +53,12 @@ export function TreeNodeMaterial({ node, isSelected, isHovered }: TreeNodeMateri
         {formatPercentage(node.percentage)}
       </div>
     </div>
-  )
+  );
 }
 
 function formatPercentage(value: number): string {
-  if (value >= 10) return `${Math.round(value)}%`
-  if (value >= 1) return `${value.toFixed(1)}%`
-  if (value >= 0.1) return `${value.toFixed(2)}%`
-  return '<0.1%'
+  if (value >= 10) return `${Math.round(value)}%`;
+  if (value >= 1) return `${value.toFixed(1)}%`;
+  if (value >= 0.1) return `${value.toFixed(2)}%`;
+  return "<0.1%";
 }

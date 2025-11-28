@@ -1,29 +1,36 @@
-'use client'
+"use client";
 
 /**
  * Toolbar Component - Left vertical tool palette with keyboard shortcuts
  */
 
-import { cn } from '@/lib/utils'
-import type { CompositionType } from '@/types/composition'
+import { cn } from "@/lib/utils";
+import type { CompositionType } from "@/types/composition";
 
 interface ToolButtonProps {
-  icon: string
-  label: string
-  shortcut: string
-  active?: boolean
-  onClick?: () => void
+  icon: string;
+  label: string;
+  shortcut: string;
+  active?: boolean;
+  onClick?: () => void;
 }
 
-function ToolButton({ icon, label, shortcut, active, onClick }: ToolButtonProps) {
+function ToolButton({
+  icon,
+  label,
+  shortcut,
+  active,
+  onClick,
+}: ToolButtonProps) {
   return (
     <button
       className={cn(
-        'relative flex items-center justify-center w-8 h-8 rounded text-lg',
-        'text-[var(--text-secondary)] transition-colors group',
-        'hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
-        'focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-panel)]',
-        active && 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]'
+        "relative flex items-center justify-center w-8 h-8 rounded text-lg",
+        "text-[var(--text-secondary)] transition-colors group",
+        "hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]",
+        "focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-panel)]",
+        active &&
+          "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]",
       )}
       onClick={onClick}
       title={`${label} (${shortcut})`}
@@ -36,35 +43,35 @@ function ToolButton({ icon, label, shortcut, active, onClick }: ToolButtonProps)
         <span className="ml-2 text-[var(--text-tertiary)]">{shortcut}</span>
       </div>
     </button>
-  )
+  );
 }
 
 interface LayerToggleProps {
-  type: CompositionType
-  visible?: boolean
-  onClick?: () => void
+  type: CompositionType;
+  visible?: boolean;
+  onClick?: () => void;
 }
 
 function LayerToggle({ type, visible = true, onClick }: LayerToggleProps) {
   const config: Record<CompositionType, { label: string; color: string }> = {
-    product: { label: 'Product', color: 'var(--accent-primary)' },
-    component: { label: 'Component', color: '#a855f7' },
-    material: { label: 'Material', color: '#f97316' },
-    chemical: { label: 'Chemical', color: '#00d4aa' },
-    element: { label: 'Element', color: '#eab308' },
-  }
+    product: { label: "Product", color: "var(--accent-primary)" },
+    component: { label: "Component", color: "#a855f7" },
+    material: { label: "Material", color: "#f97316" },
+    chemical: { label: "Chemical", color: "#00d4aa" },
+    element: { label: "Element", color: "#eab308" },
+  };
 
-  const { label, color } = config[type]
+  const { label, color } = config[type];
 
   return (
     <button
       className={cn(
-        'relative flex items-center justify-center w-8 h-8 rounded text-sm',
-        'transition-colors group',
-        'focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-panel)]',
+        "relative flex items-center justify-center w-8 h-8 rounded text-sm",
+        "transition-colors group",
+        "focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-panel)]",
         visible
-          ? 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-          : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]'
+          ? "text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+          : "text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]",
       )}
       onClick={onClick}
       title={label}
@@ -72,40 +79,46 @@ function LayerToggle({ type, visible = true, onClick }: LayerToggleProps) {
         color: visible ? color : undefined,
       }}
     >
-      <span>{visible ? '●' : '○'}</span>
+      <span>{visible ? "●" : "○"}</span>
 
       {/* Tooltip */}
       <div className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded text-xs whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
         <span className="text-[var(--text-primary)]">{label} Layer</span>
         <span className="ml-2 text-[var(--text-tertiary)]">
-          {visible ? 'Visible' : 'Hidden'}
+          {visible ? "Visible" : "Hidden"}
         </span>
       </div>
     </button>
-  )
+  );
 }
 
 interface ToolbarProps {
-  className?: string
-  activeTool?: 'select' | 'move' | 'rotate' | 'scale'
-  onToolChange?: (tool: 'select' | 'move' | 'rotate' | 'scale') => void
-  visibleLayers?: Set<CompositionType>
-  onLayerToggle?: (type: CompositionType) => void
+  className?: string;
+  activeTool?: "select" | "move" | "rotate" | "scale";
+  onToolChange?: (tool: "select" | "move" | "rotate" | "scale") => void;
+  visibleLayers?: Set<CompositionType>;
+  onLayerToggle?: (type: CompositionType) => void;
 }
 
 export function Toolbar({
   className,
-  activeTool = 'select',
+  activeTool = "select",
   onToolChange,
-  visibleLayers = new Set(['product', 'component', 'material', 'chemical', 'element']),
+  visibleLayers = new Set([
+    "product",
+    "component",
+    "material",
+    "chemical",
+    "element",
+  ]),
   onLayerToggle,
 }: ToolbarProps) {
   return (
     <div
       className={cn(
-        'flex flex-col gap-1 p-2 bg-[var(--bg-panel)] border-r border-[var(--border-subtle)]',
-        'w-12 h-full',
-        className
+        "flex flex-col gap-1 p-2 bg-[var(--bg-panel)] border-r border-[var(--border-subtle)]",
+        "w-12 h-full",
+        className,
       )}
     >
       {/* Tool Buttons */}
@@ -114,29 +127,29 @@ export function Toolbar({
           icon="◇"
           label="Select"
           shortcut="V"
-          active={activeTool === 'select'}
-          onClick={() => onToolChange?.('select')}
+          active={activeTool === "select"}
+          onClick={() => onToolChange?.("select")}
         />
         <ToolButton
           icon="↔"
           label="Move"
           shortcut="G"
-          active={activeTool === 'move'}
-          onClick={() => onToolChange?.('move')}
+          active={activeTool === "move"}
+          onClick={() => onToolChange?.("move")}
         />
         <ToolButton
           icon="⟳"
           label="Rotate"
           shortcut="R"
-          active={activeTool === 'rotate'}
-          onClick={() => onToolChange?.('rotate')}
+          active={activeTool === "rotate"}
+          onClick={() => onToolChange?.("rotate")}
         />
         <ToolButton
           icon="⊞"
           label="Scale"
           shortcut="S"
-          active={activeTool === 'scale'}
-          onClick={() => onToolChange?.('scale')}
+          active={activeTool === "scale"}
+          onClick={() => onToolChange?.("scale")}
         />
       </div>
 
@@ -150,30 +163,30 @@ export function Toolbar({
         </div>
         <LayerToggle
           type="product"
-          visible={visibleLayers.has('product')}
-          onClick={() => onLayerToggle?.('product')}
+          visible={visibleLayers.has("product")}
+          onClick={() => onLayerToggle?.("product")}
         />
         <LayerToggle
           type="component"
-          visible={visibleLayers.has('component')}
-          onClick={() => onLayerToggle?.('component')}
+          visible={visibleLayers.has("component")}
+          onClick={() => onLayerToggle?.("component")}
         />
         <LayerToggle
           type="material"
-          visible={visibleLayers.has('material')}
-          onClick={() => onLayerToggle?.('material')}
+          visible={visibleLayers.has("material")}
+          onClick={() => onLayerToggle?.("material")}
         />
         <LayerToggle
           type="chemical"
-          visible={visibleLayers.has('chemical')}
-          onClick={() => onLayerToggle?.('chemical')}
+          visible={visibleLayers.has("chemical")}
+          onClick={() => onLayerToggle?.("chemical")}
         />
         <LayerToggle
           type="element"
-          visible={visibleLayers.has('element')}
-          onClick={() => onLayerToggle?.('element')}
+          visible={visibleLayers.has("element")}
+          onClick={() => onLayerToggle?.("element")}
         />
       </div>
     </div>
-  )
+  );
 }

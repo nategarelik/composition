@@ -21,22 +21,39 @@
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
       "Bash(rm -rf:*)",
-      "Bash(rm -r:*)"
+      "Bash(rm -r:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)"
     ]
   },
   "env": {
     "COMPOSITION_PROJECT": "true",
-    "NODE_ENV": "development"
+    "NODE_ENV": "development",
+    "NEXT_TELEMETRY_DISABLED": "1"
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input = JSON.parse(require('fs').readFileSync(0, 'utf8')); const path = input.tool_input?.file_path || ''; if (path.includes('.env') || path.includes('secret')) { console.error('Blocked: Cannot modify sensitive files'); process.exit(2); }\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "npx prettier --write \"$CLAUDE_FILE_PATHS\" 2>/dev/null || true",
+            "command": "node -e \"const input = JSON.parse(require('fs').readFileSync(0, 'utf8')); const path = input.tool_input?.file_path || ''; if (path.match(/\\.(tsx?|jsx?|json|css)$/)) { require('child_process').execSync('npx prettier --write \\\"' + path + '\\\"', { stdio: 'ignore' }); }\" 2>/dev/null || true",
             "timeout": 30
           }
         ]
@@ -44,10 +61,23 @@
     ],
     "SessionStart": [
       {
+        "matcher": "startup",
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"Session started at $(date). Current branch: $(git branch --show-current 2>/dev/null || echo 'not a git repo')\""
+            "command": "echo \"Composition Project Session\\n$(git branch --show-current 2>/dev/null || echo 'detached') | $(git log -1 --format='%h %s' 2>/dev/null || echo 'no commits')\\nNode: $(node -v) | pnpm: $(pnpm -v 2>/dev/null || echo 'not found')\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$(date +%H:%M:%S) - Notification received\" >> \"$CLAUDE_PROJECT_DIR/.claude/session.log\" 2>/dev/null || true",
+            "timeout": 5
           }
         ]
       }

@@ -1,28 +1,32 @@
-'use client'
+"use client";
 
-import { create } from 'zustand'
-import type { ResearchProgress } from '@/types'
+import { create } from "zustand";
+import type { ResearchProgress } from "@/types";
 
 interface SearchState {
-  query: string
-  isSearching: boolean
-  progress: ResearchProgress
-  error: string | null
-  setQuery: (query: string) => void
-  startSearch: () => void
-  updateProgress: (stage: ResearchProgress['stage'], percentage: number, message?: string) => void
-  setError: (error: string) => void
-  reset: () => void
+  query: string;
+  isSearching: boolean;
+  progress: ResearchProgress;
+  error: string | null;
+  setQuery: (query: string) => void;
+  startSearch: () => void;
+  updateProgress: (
+    stage: ResearchProgress["stage"],
+    percentage: number,
+    message?: string,
+  ) => void;
+  setError: (error: string) => void;
+  reset: () => void;
 }
 
 const initialProgress: ResearchProgress = {
-  stage: 'identifying',
+  stage: "identifying",
   percentage: 0,
-  message: '',
-}
+  message: "",
+};
 
 export const useSearchStore = create<SearchState>((set) => ({
-  query: '',
+  query: "",
   isSearching: false,
   progress: initialProgress,
   error: null,
@@ -34,16 +38,16 @@ export const useSearchStore = create<SearchState>((set) => ({
       isSearching: true,
       error: null,
       progress: {
-        stage: 'identifying',
+        stage: "identifying",
         percentage: 10,
-        message: 'Starting research...',
+        message: "Starting research...",
       },
     }),
 
-  updateProgress: (stage, percentage, message = '') =>
+  updateProgress: (stage, percentage, message = "") =>
     set({
       progress: { stage, percentage, message },
-      isSearching: stage !== 'complete' && stage !== 'error',
+      isSearching: stage !== "complete" && stage !== "error",
     }),
 
   setError: (error) =>
@@ -51,7 +55,7 @@ export const useSearchStore = create<SearchState>((set) => ({
       error,
       isSearching: false,
       progress: {
-        stage: 'error',
+        stage: "error",
         percentage: 0,
         message: error,
       },
@@ -59,9 +63,9 @@ export const useSearchStore = create<SearchState>((set) => ({
 
   reset: () =>
     set({
-      query: '',
+      query: "",
       isSearching: false,
       progress: initialProgress,
       error: null,
     }),
-}))
+}));

@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import Link from 'next/link'
+import { useEffect } from "react";
+import Link from "next/link";
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Application error:', error)
-  }, [error])
+    console.error("Application error:", error);
+  }, [error]);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -20,7 +20,7 @@ export default function Error({
         <h1 className="text-6xl font-bold text-red-500 mb-4">Error</h1>
         <h2 className="text-2xl text-white mb-4">Something went wrong</h2>
         <p className="text-gray-400 mb-8 max-w-md">
-          {error.message || 'An unexpected error occurred. Please try again.'}
+          {error.message || "An unexpected error occurred. Please try again."}
         </p>
         <div className="flex gap-4 justify-center">
           <button
@@ -38,5 +38,5 @@ export default function Error({
         </div>
       </div>
     </main>
-  )
+  );
 }

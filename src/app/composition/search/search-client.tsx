@@ -1,73 +1,73 @@
-'use client'
+"use client";
 
-import { useEffect, useRef } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { useSearchStore, useCompositionStore } from '@/stores'
-import { SearchProgress } from '@/components/search'
-import type { ApiResponse, SearchResponse } from '@/types'
+import { useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchStore, useCompositionStore } from "@/stores";
+import { SearchProgress } from "@/components/search";
+import type { ApiResponse, SearchResponse } from "@/types";
 
 export function SearchPageClient() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const query = searchParams?.get('q') ?? null
-  const { updateProgress, setError, startSearch } = useSearchStore()
-  const { setComposition } = useCompositionStore()
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const query = searchParams?.get("q") ?? null;
+  const { updateProgress, setError, startSearch } = useSearchStore();
+  const { setComposition } = useCompositionStore();
 
   // Track if search has been initiated to prevent duplicate calls
-  const searchInitiatedRef = useRef(false)
+  const searchInitiatedRef = useRef(false);
 
   useEffect(() => {
     if (!query) {
-      router.push('/')
-      return
+      router.push("/");
+      return;
     }
 
     // Prevent duplicate searches when dependencies change
     if (searchInitiatedRef.current) {
-      return
+      return;
     }
-    searchInitiatedRef.current = true
+    searchInitiatedRef.current = true;
 
-    let cancelled = false
+    let cancelled = false;
 
     async function performSearch() {
-      startSearch()
-      updateProgress('researching', 20, `Researching "${query}"...`)
+      startSearch();
+      updateProgress("researching", 20, `Researching "${query}"...`);
 
       try {
-        const response = await fetch('/api/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query }),
-        })
+        });
 
         // Don't update state if component unmounted
-        if (cancelled) return
+        if (cancelled) return;
 
-        const data = await response.json() as ApiResponse<SearchResponse>
+        const data = (await response.json()) as ApiResponse<SearchResponse>;
 
         if (data.success && data.data) {
-          updateProgress('complete', 100, 'Research complete!')
-          setComposition(data.data.composition)
-          router.push(`/composition/${data.data.composition.id}`)
+          updateProgress("complete", 100, "Research complete!");
+          setComposition(data.data.composition);
+          router.push(`/composition/${data.data.composition.id}`);
         } else {
-          setError(data.error?.message ?? 'Failed to research composition')
+          setError(data.error?.message ?? "Failed to research composition");
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Network error')
+          setError(err instanceof Error ? err.message : "Network error");
         }
       }
     }
 
-    performSearch()
+    performSearch();
 
     return () => {
-      cancelled = true
-    }
+      cancelled = true;
+    };
     // Only re-run when query changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
+  }, [query]);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -81,5 +81,5 @@ export function SearchPageClient() {
         </p>
       </div>
     </main>
-  )
+  );
 }

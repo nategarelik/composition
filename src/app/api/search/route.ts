@@ -1,47 +1,57 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { nanoid } from 'nanoid'
-import { z } from 'zod'
-import { researchComposition } from '@/lib/agents'
-import { db } from '@/lib/db'
-import { getCached, setCache, cacheKeys } from '@/lib/redis'
-import { CACHE_TTL, SIZE_LIMITS } from '@/lib/constants'
-import { dbToComposition, normalizeQuery } from '@/lib/validators'
-import type { ApiResponse, SearchResponse } from '@/types'
+import { NextRequest, NextResponse } from "next/server";
+import { nanoid } from "nanoid";
+import { z } from "zod";
+import { researchComposition } from "@/lib/agents";
+import { db } from "@/lib/db";
+import { getCached, setCache, cacheKeys } from "@/lib/redis";
+import { CACHE_TTL, SIZE_LIMITS } from "@/lib/constants";
+import { dbToComposition, normalizeQuery } from "@/lib/validators";
+import type { ApiResponse, SearchResponse } from "@/types";
 
 // Zod schema for request validation
 const searchRequestSchema = z.object({
   query: z
     .string()
-    .min(SIZE_LIMITS.MIN_QUERY_LENGTH, `Query must be at least ${SIZE_LIMITS.MIN_QUERY_LENGTH} characters`)
-    .max(SIZE_LIMITS.MAX_QUERY_LENGTH, `Query must be less than ${SIZE_LIMITS.MAX_QUERY_LENGTH} characters`)
-    .transform((q) => q.trim().replace(/[<>{}]/g, '')), // Sanitize dangerous chars
-})
+    .min(
+      SIZE_LIMITS.MIN_QUERY_LENGTH,
+      `Query must be at least ${SIZE_LIMITS.MIN_QUERY_LENGTH} characters`,
+    )
+    .max(
+      SIZE_LIMITS.MAX_QUERY_LENGTH,
+      `Query must be less than ${SIZE_LIMITS.MAX_QUERY_LENGTH} characters`,
+    )
+    .transform((q) => q.trim().replace(/[<>{}]/g, "")), // Sanitize dangerous chars
+});
 
-export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<SearchResponse>>> {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<ApiResponse<SearchResponse>>> {
   try {
     // Parse and validate request body
-    const body = await request.json()
-    const parseResult = searchRequestSchema.safeParse(body)
+    const body = await request.json();
+    const parseResult = searchRequestSchema.safeParse(body);
 
     if (!parseResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'INVALID_QUERY',
-            message: parseResult.error.issues[0]?.message ?? 'Invalid query',
+            code: "INVALID_QUERY",
+            message: parseResult.error.issues[0]?.message ?? "Invalid query",
           },
         },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
-    const { query } = parseResult.data
+    const { query } = parseResult.data;
 
-    const normalized = normalizeQuery(query)
+    const normalized = normalizeQuery(query);
 
     // Check Redis cache first
-    const cachedData = await getCached<ReturnType<typeof dbToComposition>>(cacheKeys.compositionByQuery(query))
+    const cachedData = await getCached<ReturnType<typeof dbToComposition>>(
+      cacheKeys.compositionByQuery(query),
+    );
     if (cachedData) {
       return NextResponse.json({
         success: true,
@@ -49,29 +59,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           composition: cachedData,
           cached: true,
         },
-      })
+      });
     }
 
     // Check database
     const existing = await db.composition.findFirst({
       where: { queryNorm: normalized },
-    })
+    });
 
     if (existing) {
-      const composition = dbToComposition(existing)
-      await setCache(cacheKeys.compositionByQuery(query), composition, CACHE_TTL.COMPOSITION_BY_QUERY)
+      const composition = dbToComposition(existing);
+      await setCache(
+        cacheKeys.compositionByQuery(query),
+        composition,
+        CACHE_TTL.COMPOSITION_BY_QUERY,
+      );
       return NextResponse.json({
         success: true,
         data: {
           composition,
           cached: true,
         },
-      })
+      });
     }
 
     // Perform research
-    const startTime = Date.now()
-    const result = await researchComposition(query)
+    const startTime = Date.now();
+    const result = await researchComposition(query);
 
     // Save to database
     const record = await db.composition.create({
@@ -87,10 +101,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         confidence: result.confidence,
         researchedAt: new Date(),
       },
-    })
+    });
 
-    const composition = dbToComposition(record)
-    await setCache(cacheKeys.compositionByQuery(query), composition, CACHE_TTL.COMPOSITION_BY_QUERY)
+    const composition = dbToComposition(record);
+    await setCache(
+      cacheKeys.compositionByQuery(query),
+      composition,
+      CACHE_TTL.COMPOSITION_BY_QUERY,
+    );
 
     return NextResponse.json({
       success: true,
@@ -99,18 +117,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         cached: false,
         researchTime: Date.now() - startTime,
       },
-    })
+    });
   } catch (error) {
-    console.error('Search error:', error)
+    console.error("Search error:", error);
     return NextResponse.json(
       {
         success: false,
         error: {
-          code: 'RESEARCH_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to research composition',
+          code: "RESEARCH_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to research composition",
         },
       },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

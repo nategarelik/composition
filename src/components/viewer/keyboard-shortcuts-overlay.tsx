@@ -1,13 +1,17 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
-import { SHORTCUTS, formatShortcutKey, type GizmoMode } from '@/hooks/use-keyboard-shortcuts'
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import {
+  SHORTCUTS,
+  formatShortcutKey,
+  type GizmoMode,
+} from "@/hooks/use-keyboard-shortcuts";
 
 interface KeyboardShortcutsOverlayProps {
-  currentMode: GizmoMode
-  showHelp?: boolean
+  currentMode: GizmoMode;
+  showHelp?: boolean;
 }
 
 /**
@@ -17,22 +21,22 @@ export function KeyboardShortcutsOverlay({
   currentMode,
   showHelp = false,
 }: KeyboardShortcutsOverlayProps) {
-  const [showModeIndicator, setShowModeIndicator] = useState(false)
+  const [showModeIndicator, setShowModeIndicator] = useState(false);
 
   // Show mode indicator briefly when mode changes
   useEffect(() => {
     if (currentMode) {
-      setShowModeIndicator(true)
-      const timer = setTimeout(() => setShowModeIndicator(false), 2000)
-      return () => clearTimeout(timer)
+      setShowModeIndicator(true);
+      const timer = setTimeout(() => setShowModeIndicator(false), 2000);
+      return () => clearTimeout(timer);
     }
-  }, [currentMode])
+  }, [currentMode]);
 
   const modeLabels: Record<string, string> = {
-    translate: 'Move Mode',
-    rotate: 'Rotate Mode',
-    scale: 'Scale Mode',
-  }
+    translate: "Move Mode",
+    rotate: "Rotate Mode",
+    scale: "Scale Mode",
+  };
 
   return (
     <>
@@ -76,8 +80,14 @@ export function KeyboardShortcutsOverlay({
                 <ShortcutRow label="Rotate" shortcut={SHORTCUTS.ROTATE} />
                 <ShortcutRow label="Scale" shortcut={SHORTCUTS.SCALE} />
                 <ShortcutRow label="Deselect" shortcut={SHORTCUTS.DESELECT} />
-                <ShortcutRow label="Explode" shortcut={SHORTCUTS.TOGGLE_EXPLODE} />
-                <ShortcutRow label="Focus" shortcut={SHORTCUTS.FOCUS_SELECTED} />
+                <ShortcutRow
+                  label="Explode"
+                  shortcut={SHORTCUTS.TOGGLE_EXPLODE}
+                />
+                <ShortcutRow
+                  label="Focus"
+                  shortcut={SHORTCUTS.FOCUS_SELECTED}
+                />
                 <ShortcutRow label="Home" shortcut={SHORTCUTS.RESET_VIEW} />
               </div>
             </div>
@@ -85,54 +95,63 @@ export function KeyboardShortcutsOverlay({
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }
 
 interface ShortcutRowProps {
-  label: string
-  shortcut: string
+  label: string;
+  shortcut: string;
 }
 
 function ShortcutRow({ label, shortcut }: ShortcutRowProps) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-xs text-text-primary">{label}</span>
-      <kbd className={cn(
-        'px-2 py-0.5 bg-bg-tertiary border border-border-default rounded',
-        'font-mono text-[10px] text-text-secondary'
-      )}>
+      <kbd
+        className={cn(
+          "px-2 py-0.5 bg-bg-tertiary border border-border-default rounded",
+          "font-mono text-[10px] text-text-secondary",
+        )}
+      >
         {formatShortcutKey(shortcut)}
       </kbd>
     </div>
-  )
+  );
 }
 
 /**
  * Small indicator showing the current mode in the corner
  */
 export function ModeIndicator({ mode }: { mode: GizmoMode }) {
-  if (!mode) return null
+  if (!mode) return null;
 
   const config: Record<string, { icon: string; color: string }> = {
-    translate: { icon: '\u2194', color: 'text-accent-primary' },
-    rotate: { icon: '\u27F3', color: 'text-accent-warning' },
-    scale: { icon: '\u229E', color: 'text-accent-secondary' },
-  }
+    translate: { icon: "\u2194", color: "text-accent-primary" },
+    rotate: { icon: "\u27F3", color: "text-accent-warning" },
+    scale: { icon: "\u229E", color: "text-accent-secondary" },
+  };
 
-  const { icon, color } = config[mode] || { icon: '?', color: 'text-text-secondary' }
+  const { icon, color } = config[mode] || {
+    icon: "?",
+    color: "text-text-secondary",
+  };
 
   return (
-    <div className={cn(
-      'absolute top-4 right-4 z-30',
-      'flex items-center gap-2 px-3 py-1.5',
-      'bg-bg-secondary/90 border border-border-subtle rounded',
-      'backdrop-blur-sm'
-    )}>
-      <span className={cn('text-lg', color)}>{icon}</span>
-      <span className="font-mono text-xs text-text-primary capitalize">{mode}</span>
+    <div
+      className={cn(
+        "absolute top-4 right-4 z-30",
+        "flex items-center gap-2 px-3 py-1.5",
+        "bg-bg-secondary/90 border border-border-subtle rounded",
+        "backdrop-blur-sm",
+      )}
+    >
+      <span className={cn("text-lg", color)}>{icon}</span>
+      <span className="font-mono text-xs text-text-primary capitalize">
+        {mode}
+      </span>
       <kbd className="px-1.5 py-0.5 bg-bg-tertiary border border-border-default rounded font-mono text-[10px] text-text-secondary">
         Esc
       </kbd>
     </div>
-  )
+  );
 }

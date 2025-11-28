@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
 /**
  * Menu Bar Component - Blender/Figma-style top menu
  */
 
-import * as Menubar from '@radix-ui/react-menubar'
-import { cn } from '@/lib/utils'
+import * as Menubar from "@radix-ui/react-menubar";
+import { cn } from "@/lib/utils";
 
 interface MenuBarProps {
-  className?: string
-  compositionName?: string
+  className?: string;
+  compositionName?: string;
 }
 
 export function MenuBar({ className, compositionName }: MenuBarProps) {
   return (
     <Menubar.Root
       className={cn(
-        'flex items-center h-8 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)]',
-        'px-2 select-none',
-        className
+        "flex items-center h-8 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)]",
+        "px-2 select-none",
+        className,
       )}
     >
       {/* File Menu */}
@@ -34,20 +34,28 @@ export function MenuBar({ className, compositionName }: MenuBarProps) {
           >
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
               New Analysis
-              <span className="ml-auto text-[var(--text-tertiary)]">Ctrl+N</span>
+              <span className="ml-auto text-[var(--text-tertiary)]">
+                Ctrl+N
+              </span>
             </Menubar.Item>
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
               Open...
-              <span className="ml-auto text-[var(--text-tertiary)]">Ctrl+O</span>
+              <span className="ml-auto text-[var(--text-tertiary)]">
+                Ctrl+O
+              </span>
             </Menubar.Item>
             <Menubar.Separator className="h-px bg-[var(--border-subtle)] my-1" />
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
               Save
-              <span className="ml-auto text-[var(--text-tertiary)]">Ctrl+S</span>
+              <span className="ml-auto text-[var(--text-tertiary)]">
+                Ctrl+S
+              </span>
             </Menubar.Item>
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
               Export...
-              <span className="ml-auto text-[var(--text-tertiary)]">Ctrl+E</span>
+              <span className="ml-auto text-[var(--text-tertiary)]">
+                Ctrl+E
+              </span>
             </Menubar.Item>
           </Menubar.Content>
         </Menubar.Portal>
@@ -66,11 +74,15 @@ export function MenuBar({ className, compositionName }: MenuBarProps) {
           >
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
               Undo
-              <span className="ml-auto text-[var(--text-tertiary)]">Ctrl+Z</span>
+              <span className="ml-auto text-[var(--text-tertiary)]">
+                Ctrl+Z
+              </span>
             </Menubar.Item>
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
               Redo
-              <span className="ml-auto text-[var(--text-tertiary)]">Ctrl+Y</span>
+              <span className="ml-auto text-[var(--text-tertiary)]">
+                Ctrl+Y
+              </span>
             </Menubar.Item>
             <Menubar.Separator className="h-px bg-[var(--border-subtle)] my-1" />
             <Menubar.Item className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
@@ -92,15 +104,27 @@ export function MenuBar({ className, compositionName }: MenuBarProps) {
             sideOffset={4}
           >
             <Menubar.CheckboxItem className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer">
-              <Menubar.ItemIndicator className="absolute left-1">✓</Menubar.ItemIndicator>
+              <Menubar.ItemIndicator className="absolute left-1">
+                ✓
+              </Menubar.ItemIndicator>
               Toolbar
             </Menubar.CheckboxItem>
-            <Menubar.CheckboxItem className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer" defaultChecked>
-              <Menubar.ItemIndicator className="absolute left-1">✓</Menubar.ItemIndicator>
+            <Menubar.CheckboxItem
+              className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer"
+              defaultChecked
+            >
+              <Menubar.ItemIndicator className="absolute left-1">
+                ✓
+              </Menubar.ItemIndicator>
               Properties Panel
             </Menubar.CheckboxItem>
-            <Menubar.CheckboxItem className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer" defaultChecked>
-              <Menubar.ItemIndicator className="absolute left-1">✓</Menubar.ItemIndicator>
+            <Menubar.CheckboxItem
+              className="text-xs text-[var(--text-primary)] px-3 py-2 rounded hover:bg-[var(--bg-tertiary)] outline-none cursor-pointer"
+              defaultChecked
+            >
+              <Menubar.ItemIndicator className="absolute left-1">
+                ✓
+              </Menubar.ItemIndicator>
               Bottom Panel
             </Menubar.CheckboxItem>
             <Menubar.Separator className="h-px bg-[var(--border-subtle)] my-1" />
@@ -203,5 +227,5 @@ export function MenuBar({ className, compositionName }: MenuBarProps) {
         </button>
       </div>
     </Menubar.Root>
-  )
+  );
 }

@@ -1,22 +1,22 @@
-'use client'
+"use client";
 
-import { useState, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSearchStore } from '@/stores'
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useSearchStore } from "@/stores";
 
 export function SearchBar() {
-  const router = useRouter()
-  const [input, setInput] = useState('')
-  const { isSearching, startSearch, setQuery } = useSearchStore()
+  const router = useRouter();
+  const [input, setInput] = useState("");
+  const { isSearching, startSearch, setQuery } = useSearchStore();
 
   const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isSearching) return
+    e.preventDefault();
+    if (!input.trim() || isSearching) return;
 
-    setQuery(input.trim())
-    startSearch()
-    router.push(`/composition/search?q=${encodeURIComponent(input.trim())}`)
-  }
+    setQuery(input.trim());
+    startSearch();
+    router.push(`/composition/search?q=${encodeURIComponent(input.trim())}`);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
@@ -40,10 +40,10 @@ export function SearchBar() {
               Researching...
             </span>
           ) : (
-            'Deconstruct'
+            "Deconstruct"
           )}
         </button>
       </div>
     </form>
-  )
+  );
 }

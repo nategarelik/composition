@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
 /**
  * Chat Messages Component - Container for chat message list
  * Handles scrolling, auto-scroll to bottom, and empty state
  */
 
-import { useRef, useEffect, useCallback } from 'react'
-import { cn } from '@/lib/utils'
-import { ChatMessage } from './chat-message'
-import type { ChatMessage as ChatMessageType } from '@/stores/chat-store'
+import { useRef, useEffect, useCallback } from "react";
+import { cn } from "@/lib/utils";
+import { ChatMessage } from "./chat-message";
+import type { ChatMessage as ChatMessageType } from "@/stores/chat-store";
 
 interface ChatMessagesProps {
-  messages: ChatMessageType[]
-  isLoading?: boolean
-  onNodeClick?: (nodeName: string) => void
-  className?: string
+  messages: ChatMessageType[];
+  isLoading?: boolean;
+  onNodeClick?: (nodeName: string) => void;
+  className?: string;
 }
 
 export function ChatMessages({
@@ -23,28 +23,28 @@ export function ChatMessages({
   onNodeClick,
   className,
 }: ChatMessagesProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = useCallback((smooth = true) => {
     messagesEndRef.current?.scrollIntoView({
-      behavior: smooth ? 'smooth' : 'instant',
-    })
-  }, [])
+      behavior: smooth ? "smooth" : "instant",
+    });
+  }, []);
 
   // Scroll on new message
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   // Empty state
   if (messages.length === 0 && !isLoading) {
     return (
       <div
         className={cn(
-          'flex-1 flex flex-col items-center justify-center p-6',
-          className
+          "flex-1 flex flex-col items-center justify-center p-6",
+          className,
         )}
       >
         <div className="text-center max-w-xs">
@@ -68,20 +68,18 @@ export function ChatMessages({
             Analysis Assistant
           </h3>
           <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">
-            Ask questions about this composition. I can help you understand materials, chemicals, safety, and more.
+            Ask questions about this composition. I can help you understand
+            materials, chemicals, safety, and more.
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div
       ref={containerRef}
-      className={cn(
-        'flex-1 overflow-y-auto p-4 space-y-4',
-        className
-      )}
+      className={cn("flex-1 overflow-y-auto p-4 space-y-4", className)}
     >
       {messages.map((message) => (
         <ChatMessage
@@ -98,9 +96,9 @@ export function ChatMessages({
             <div className="text-xs font-mono mb-1.5 text-[var(--text-tertiary)]">
               ANALYST
               <span className="mx-2">|</span>
-              {new Date().toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
+              {new Date().toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </div>
             <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
@@ -118,5 +116,5 @@ export function ChatMessages({
       {/* Scroll anchor */}
       <div ref={messagesEndRef} />
     </div>
-  )
+  );
 }

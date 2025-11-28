@@ -1,38 +1,42 @@
-'use client'
+"use client";
 
 /**
  * Chat Drawer Component - Bottom drawer using Vaul
  * Contains chat interface for composition Q&A
  */
 
-import { useCallback, useEffect, useMemo } from 'react'
-import { Drawer } from 'vaul'
-import { cn } from '@/lib/utils'
-import { useChatStore, useCompositionStore } from '@/stores'
-import { ChatMessages } from './chat-messages'
-import { ChatInput } from './chat-input'
-import { ChatSuggestions } from './chat-suggestions'
-import type { Composition, CompositionNode } from '@/types'
+import { useCallback, useEffect, useMemo } from "react";
+import { Drawer } from "vaul";
+import { cn } from "@/lib/utils";
+import { useChatStore, useCompositionStore } from "@/stores";
+import { ChatMessages } from "./chat-messages";
+import { ChatInput } from "./chat-input";
+import { ChatSuggestions } from "./chat-suggestions";
+import type { Composition, CompositionNode } from "@/types";
 
 interface ChatDrawerProps {
-  composition: Composition | null
-  className?: string
+  composition: Composition | null;
+  className?: string;
 }
 
 // Helper to generate a summary of the composition tree
-function generateCompositionSummary(node: CompositionNode, depth = 0, maxDepth = 2): string {
-  if (depth > maxDepth) return ''
+function generateCompositionSummary(
+  node: CompositionNode,
+  depth = 0,
+  maxDepth = 2,
+): string {
+  if (depth > maxDepth) return "";
 
-  const indent = '  '.repeat(depth)
-  let summary = `${indent}- ${node.name} (${node.type}, ${node.percentage}%)\n`
+  const indent = "  ".repeat(depth);
+  let summary = `${indent}- ${node.name} (${node.type}, ${node.percentage}%)\n`;
 
   if (node.children && depth < maxDepth) {
     for (const child of node.children) {
-      summary += generateCompositionSummary(child, depth + 1, maxDepth)
+      summary += generateCompositionSummary(child, depth + 1, maxDepth);
     }
   }
 
-  return summary
+  return summary;
 }
 
 export function ChatDrawer({ composition, className }: ChatDrawerProps) {
@@ -50,55 +54,56 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
     setLoading,
     setError,
     generateSuggestions,
-  } = useChatStore()
+  } = useChatStore();
 
-  const { selectedNode, selectNode, expandToNode, setFocusedNode } = useCompositionStore()
+  const { selectedNode, selectNode, expandToNode, setFocusedNode } =
+    useCompositionStore();
 
   // Initialize conversation when composition changes
   useEffect(() => {
     if (composition) {
-      initConversation(composition)
+      initConversation(composition);
     }
-  }, [composition, initConversation])
+  }, [composition, initConversation]);
 
   // Regenerate suggestions when selected node changes
   useEffect(() => {
     if (composition) {
-      generateSuggestions(composition, selectedNode)
+      generateSuggestions(composition, selectedNode);
     }
-  }, [composition, selectedNode, generateSuggestions])
+  }, [composition, selectedNode, generateSuggestions]);
 
   // Generate composition summary for context
   const compositionSummary = useMemo(() => {
-    if (!composition) return ''
-    return generateCompositionSummary(composition.root)
-  }, [composition])
+    if (!composition) return "";
+    return generateCompositionSummary(composition.root);
+  }, [composition]);
 
   // Handle sending a message
   const handleSendMessage = useCallback(
     async (message: string) => {
-      if (!composition || !conversation) return
+      if (!composition || !conversation) return;
 
       // Add user message
-      addMessage({ role: 'user', content: message })
+      addMessage({ role: "user", content: message });
 
       // Add empty assistant message for streaming
-      addMessage({ role: 'assistant', content: '', isStreaming: true })
+      addMessage({ role: "assistant", content: "", isStreaming: true });
 
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
         // Build history from conversation
         const history = conversation.messages.map((m) => ({
-          role: m.role as 'user' | 'assistant',
+          role: m.role as "user" | "assistant",
           content: m.content,
-        }))
+        }));
 
         // Call chat API
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message,
             composition: {
@@ -119,42 +124,42 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
             history,
             compositionSummary,
           }),
-        })
+        });
 
         if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error?.message ?? 'Failed to send message')
+          const error = await response.json();
+          throw new Error(error.error?.message ?? "Failed to send message");
         }
 
         // Read streaming response
-        const reader = response.body?.getReader()
+        const reader = response.body?.getReader();
         if (!reader) {
-          throw new Error('No response body')
+          throw new Error("No response body");
         }
 
-        const decoder = new TextDecoder()
+        const decoder = new TextDecoder();
 
         while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+          const { done, value } = await reader.read();
+          if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n').filter((line) => line.trim())
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n").filter((line) => line.trim());
 
           for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6)
-              if (data === '[DONE]') {
-                setLastMessageComplete()
-                break
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") {
+                setLastMessageComplete();
+                break;
               }
 
               try {
-                const parsed = JSON.parse(data)
+                const parsed = JSON.parse(data);
                 if (parsed.text) {
-                  appendToLastMessage(parsed.text)
+                  appendToLastMessage(parsed.text);
                 } else if (parsed.error) {
-                  throw new Error(parsed.error)
+                  throw new Error(parsed.error);
                 }
               } catch {
                 // Ignore parse errors for incomplete chunks
@@ -163,14 +168,14 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
           }
         }
       } catch (error) {
-        console.error('Chat error:', error)
+        console.error("Chat error:", error);
         setError(
-          error instanceof Error ? error.message : 'Failed to send message'
-        )
+          error instanceof Error ? error.message : "Failed to send message",
+        );
         // Update last message with error
-        setLastMessageComplete()
+        setLastMessageComplete();
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     },
     [
@@ -183,46 +188,46 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
       setLastMessageComplete,
       setLoading,
       setError,
-    ]
-  )
+    ],
+  );
 
   // Handle clicking a node reference in chat
   const handleNodeClick = useCallback(
     (nodeName: string) => {
-      if (!composition) return
+      if (!composition) return;
 
       // Find node by name in tree
       const findNode = (
         node: CompositionNode,
-        name: string
+        name: string,
       ): CompositionNode | null => {
-        if (node.name.toLowerCase() === name.toLowerCase()) return node
+        if (node.name.toLowerCase() === name.toLowerCase()) return node;
         if (node.children) {
           for (const child of node.children) {
-            const found = findNode(child, name)
-            if (found) return found
+            const found = findNode(child, name);
+            if (found) return found;
           }
         }
-        return null
-      }
+        return null;
+      };
 
-      const node = findNode(composition.root, nodeName)
+      const node = findNode(composition.root, nodeName);
       if (node) {
-        selectNode(node)
-        expandToNode(node.id)
-        setFocusedNode(node.id)
+        selectNode(node);
+        expandToNode(node.id);
+        setFocusedNode(node.id);
       }
     },
-    [composition, selectNode, expandToNode, setFocusedNode]
-  )
+    [composition, selectNode, expandToNode, setFocusedNode],
+  );
 
   // Handle selecting a suggested question
   const handleSuggestionSelect = useCallback(
     (question: string) => {
-      handleSendMessage(question)
+      handleSendMessage(question);
     },
-    [handleSendMessage]
-  )
+    [handleSendMessage],
+  );
 
   return (
     <Drawer.Root
@@ -236,15 +241,15 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
       <Drawer.Trigger asChild>
         <button
           className={cn(
-            'fixed bottom-4 right-4 z-40',
-            'flex items-center gap-2 px-4 py-2.5 rounded-lg',
-            'bg-[var(--accent-primary)] text-white',
-            'shadow-lg hover:shadow-xl',
-            'hover:bg-[var(--accent-primary)]/90',
-            'focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]',
-            'transition-all duration-200',
-            isOpen && 'opacity-0 pointer-events-none',
-            className
+            "fixed bottom-4 right-4 z-40",
+            "flex items-center gap-2 px-4 py-2.5 rounded-lg",
+            "bg-[var(--accent-primary)] text-white",
+            "shadow-lg hover:shadow-xl",
+            "hover:bg-[var(--accent-primary)]/90",
+            "focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]",
+            "transition-all duration-200",
+            isOpen && "opacity-0 pointer-events-none",
+            className,
           )}
         >
           <svg
@@ -271,11 +276,11 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Drawer.Content
           className={cn(
-            'fixed bottom-0 left-0 right-0 z-50',
-            'bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)]',
-            'rounded-t-xl shadow-2xl',
-            'flex flex-col',
-            'max-h-[96vh] h-[75vh]'
+            "fixed bottom-0 left-0 right-0 z-50",
+            "bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)]",
+            "rounded-t-xl shadow-2xl",
+            "flex flex-col",
+            "max-h-[96vh] h-[75vh]",
           )}
         >
           {/* Drawer handle */}
@@ -308,7 +313,7 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
                 <Drawer.Description className="text-xs text-[var(--text-tertiary)]">
                   {composition
                     ? `Discussing: ${composition.name}`
-                    : 'No composition loaded'}
+                    : "No composition loaded"}
                 </Drawer.Description>
               </div>
             </div>
@@ -357,11 +362,11 @@ export function ChatDrawer({ composition, className }: ChatDrawerProps) {
             placeholder={
               selectedNode
                 ? `Ask about ${selectedNode.name}...`
-                : 'Ask about this composition...'
+                : "Ask about this composition..."
             }
           />
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
-  )
+  );
 }

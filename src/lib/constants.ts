@@ -1,5 +1,5 @@
 // API Configuration
-export const ANTHROPIC_MAX_TOKENS = 8192
+export const ANTHROPIC_MAX_TOKENS = 8192;
 
 // Cache TTL (Time To Live) in seconds
 export const CACHE_TTL = {
@@ -9,7 +9,7 @@ export const CACHE_TTL = {
   COMPOSITION_BY_QUERY: 3600,
   /** Composition by ID cache: 24 hours */
   COMPOSITION_BY_ID: 86400,
-} as const
+} as const;
 
 // Size limits
 export const SIZE_LIMITS = {
@@ -19,4 +19,4 @@ export const SIZE_LIMITS = {
   MIN_QUERY_LENGTH: 2,
   /** Maximum search query length */
   MAX_QUERY_LENGTH: 200,
-} as const
+} as const;

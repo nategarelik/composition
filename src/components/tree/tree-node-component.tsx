@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import type { CompositionNode } from '@/types'
-import { cn } from '@/lib/utils'
+import type { CompositionNode } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface TreeNodeComponentProps {
-  node: CompositionNode
-  isSelected: boolean
-  isHovered: boolean
-  childCount: number
+  node: CompositionNode;
+  isSelected: boolean;
+  isHovered: boolean;
+  childCount: number;
 }
 
 // Component-specific display with engineering details
@@ -17,15 +17,15 @@ export function TreeNodeComponent({
   isHovered,
   childCount,
 }: TreeNodeComponentProps) {
-  const partNumber = node.metadata?.partNumber as string | undefined
-  const manufacturer = node.metadata?.manufacturer as string | undefined
+  const partNumber = node.metadata?.partNumber as string | undefined;
+  const manufacturer = node.metadata?.manufacturer as string | undefined;
 
   return (
     <div
       className={cn(
-        'flex items-center gap-2 px-2 py-1 rounded',
-        isSelected && 'ring-1 ring-layer-component/50',
-        isHovered && 'bg-layer-component/5'
+        "flex items-center gap-2 px-2 py-1 rounded",
+        isSelected && "ring-1 ring-layer-component/50",
+        isHovered && "bg-layer-component/5",
       )}
     >
       {/* Component Icon */}
@@ -62,25 +62,25 @@ export function TreeNodeComponent({
         <span className="font-mono text-xs text-layer-component tabular-nums">
           {formatPercentage(node.percentage)}
         </span>
-        {typeof node.metadata?.mass === 'number' && (
+        {typeof node.metadata?.mass === "number" && (
           <span className="font-mono text-[9px] text-text-secondary tabular-nums">
             {formatMass(node.metadata.mass)}
           </span>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function formatPercentage(value: number): string {
-  if (value >= 10) return `${Math.round(value)}%`
-  if (value >= 1) return `${value.toFixed(1)}%`
-  if (value >= 0.1) return `${value.toFixed(2)}%`
-  return '<0.1%'
+  if (value >= 10) return `${Math.round(value)}%`;
+  if (value >= 1) return `${value.toFixed(1)}%`;
+  if (value >= 0.1) return `${value.toFixed(2)}%`;
+  return "<0.1%";
 }
 
 function formatMass(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`
-  if (grams >= 1) return `${grams.toFixed(1)}g`
-  return `${(grams * 1000).toFixed(0)}mg`
+  if (grams >= 1000) return `${(grams / 1000).toFixed(1)}kg`;
+  if (grams >= 1) return `${grams.toFixed(1)}g`;
+  return `${(grams * 1000).toFixed(0)}mg`;
 }

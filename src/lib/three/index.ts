@@ -8,4 +8,4 @@ export {
   filterByDepth,
   countNodes,
   getMaxDepth,
-} from './composition-utils'
+} from "./composition-utils";

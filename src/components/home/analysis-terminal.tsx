@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import { SystemStatus } from './system-status'
-import { RecentAnalyses } from './recent-analyses'
-import { SpecimenInput } from './specimen-input'
-import { QuickSpecimens } from './quick-specimens'
-import { SystemLog } from './system-log'
+import { SystemStatus } from "./system-status";
+import { RecentAnalyses } from "./recent-analyses";
+import { SpecimenInput } from "./specimen-input";
+import { QuickSpecimens } from "./quick-specimens";
+import { SystemLog } from "./system-log";
 
 export function AnalysisTerminal() {
   const handleAnalyze = (query: string) => {
     // Add log entry when analysis starts
-    if (typeof window !== 'undefined' && window.addSystemLog) {
-      window.addSystemLog(`Analysis requested: ${query}`, 'info')
+    if (typeof window !== "undefined" && window.addSystemLog) {
+      window.addSystemLog(`Analysis requested: ${query}`, "info");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] p-6">
@@ -32,7 +32,9 @@ export function AnalysisTerminal() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent-secondary)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--accent-secondary)]" />
             </span>
-            <span className="font-mono text-xs text-[var(--text-mono)]">ONLINE</span>
+            <span className="font-mono text-xs text-[var(--text-mono)]">
+              ONLINE
+            </span>
           </div>
         </div>
       </div>
@@ -50,7 +52,9 @@ export function AnalysisTerminal() {
               </span>
             </div>
             <div className="p-3 text-center">
-              <span className="font-mono text-xs text-[var(--text-secondary)]">No pending items</span>
+              <span className="font-mono text-xs text-[var(--text-secondary)]">
+                No pending items
+              </span>
             </div>
           </div>
         </div>
@@ -97,5 +101,5 @@ export function AnalysisTerminal() {
         </div>
       </div>
     </div>
-  )
+  );
 }

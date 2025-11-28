@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import { useSearchStore } from '@/stores'
+import { useSearchStore } from "@/stores";
 
 const stageLabels: Record<string, string> = {
-  identifying: 'Identifying',
-  researching: 'Researching',
-  analyzing: 'Analyzing',
-  synthesizing: 'Synthesizing',
-  complete: 'Complete',
-  error: 'Error',
-}
+  identifying: "Identifying",
+  researching: "Researching",
+  analyzing: "Analyzing",
+  synthesizing: "Synthesizing",
+  complete: "Complete",
+  error: "Error",
+};
 
 export function SearchProgress() {
-  const { isSearching, progress, error } = useSearchStore()
+  const { isSearching, progress, error } = useSearchStore();
 
-  if (!isSearching && !error) return null
+  if (!isSearching && !error) return null;
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-8">
@@ -30,7 +30,9 @@ export function SearchProgress() {
               <span className="text-sm font-medium text-gray-300">
                 {stageLabels[progress.stage] ?? progress.stage}
               </span>
-              <span className="text-sm text-gray-500">{progress.percentage}%</span>
+              <span className="text-sm text-gray-500">
+                {progress.percentage}%
+              </span>
             </div>
             <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
               <div
@@ -45,5 +47,5 @@ export function SearchProgress() {
         )}
       </div>
     </div>
-  )
+  );
 }

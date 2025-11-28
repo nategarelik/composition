@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { AnalysisTerminal } from '@/components/home'
+import { AnalysisTerminal } from "@/components/home";
 
 export function HomeClient() {
-  return <AnalysisTerminal />
+  return <AnalysisTerminal />;
 }

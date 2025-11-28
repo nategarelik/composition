@@ -1,25 +1,29 @@
-'use client'
+"use client";
 
-import type { CompositionNode } from '@/types'
-import { cn } from '@/lib/utils'
+import type { CompositionNode } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface TreeNodeChemicalProps {
-  node: CompositionNode
-  isSelected: boolean
-  isHovered: boolean
+  node: CompositionNode;
+  isSelected: boolean;
+  isHovered: boolean;
 }
 
 // Chemical-specific display with molecular formula
-export function TreeNodeChemical({ node, isSelected, isHovered }: TreeNodeChemicalProps) {
-  const formula = node.metadata?.formula as string | undefined
-  const casNumber = node.metadata?.casNumber as string | undefined
+export function TreeNodeChemical({
+  node,
+  isSelected,
+  isHovered,
+}: TreeNodeChemicalProps) {
+  const formula = node.metadata?.formula as string | undefined;
+  const casNumber = node.metadata?.casNumber as string | undefined;
 
   return (
     <div
       className={cn(
-        'flex items-center gap-2 px-2 py-1 rounded',
-        isSelected && 'ring-1 ring-layer-chemical/50',
-        isHovered && 'bg-layer-chemical/5'
+        "flex items-center gap-2 px-2 py-1 rounded",
+        isSelected && "ring-1 ring-layer-chemical/50",
+        isHovered && "bg-layer-chemical/5",
       )}
     >
       {/* Chemical Icon */}
@@ -49,21 +53,24 @@ export function TreeNodeChemical({ node, isSelected, isHovered }: TreeNodeChemic
         {formatPercentage(node.percentage)}
       </div>
     </div>
-  )
+  );
 }
 
 // Format chemical formula with subscripts (using Unicode)
 function formatFormula(formula: string): string {
   // Replace numbers with subscript equivalents
   return formula.replace(/(\d+)/g, (match) => {
-    const subscripts = '₀₁₂₃₄₅₆₇₈₉'
-    return match.split('').map((d) => subscripts[parseInt(d)]).join('')
-  })
+    const subscripts = "₀₁₂₃₄₅₆₇₈₉";
+    return match
+      .split("")
+      .map((d) => subscripts[parseInt(d)])
+      .join("");
+  });
 }
 
 function formatPercentage(value: number): string {
-  if (value >= 10) return `${Math.round(value)}%`
-  if (value >= 1) return `${value.toFixed(1)}%`
-  if (value >= 0.1) return `${value.toFixed(2)}%`
-  return '<0.1%'
+  if (value >= 10) return `${Math.round(value)}%`;
+  if (value >= 1) return `${value.toFixed(1)}%`;
+  if (value >= 0.1) return `${value.toFixed(2)}%`;
+  return "<0.1%";
 }

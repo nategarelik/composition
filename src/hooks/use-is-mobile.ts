@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
 /**
  * Hook to detect mobile viewport
@@ -8,46 +8,46 @@ import { useState, useEffect } from 'react'
  * @returns boolean indicating if the viewport is mobile-sized
  */
 export function useIsMobile(breakpoint: number = 768): boolean {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Check initial width
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < breakpoint)
-    }
+      setIsMobile(window.innerWidth < breakpoint);
+    };
 
     // Set initial value
-    checkMobile()
+    checkMobile();
 
     // Listen for resize events
-    window.addEventListener('resize', checkMobile)
+    window.addEventListener("resize", checkMobile);
 
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [breakpoint])
+    return () => window.removeEventListener("resize", checkMobile);
+  }, [breakpoint]);
 
-  return isMobile
+  return isMobile;
 }
 
 /**
  * Hook to get current viewport dimensions
  */
 export function useViewportSize() {
-  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const updateSize = () => {
       setSize({
         width: window.innerWidth,
         height: window.innerHeight,
-      })
-    }
+      });
+    };
 
-    updateSize()
-    window.addEventListener('resize', updateSize)
+    updateSize();
+    window.addEventListener("resize", updateSize);
 
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
 
-  return size
+  return size;
 }

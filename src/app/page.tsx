@@ -1,8 +1,8 @@
-import { Suspense } from 'react'
-import { HomeClient } from './home-client'
+import { Suspense } from "react";
+import { HomeClient } from "./home-client";
 
 // Force dynamic rendering to avoid SSG issues with zustand stores
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
@@ -18,5 +18,5 @@ export default function HomePage() {
     >
       <HomeClient />
     </Suspense>
-  )
+  );
 }

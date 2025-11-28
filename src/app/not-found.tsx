@@ -1,7 +1,4 @@
-import Link from 'next/link'
-
-// Force dynamic rendering
-export const dynamic = 'force-dynamic'
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -20,5 +17,5 @@ export default function NotFound() {
         </Link>
       </div>
     </main>
-  )
+  );
 }

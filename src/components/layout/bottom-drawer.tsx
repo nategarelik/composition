@@ -1,23 +1,28 @@
-'use client'
+"use client";
 
-import { useState, useCallback, useRef } from 'react'
-import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { useState, useCallback, useRef } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useDragControls,
+  PanInfo,
+} from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface BottomDrawerProps {
-  children: React.ReactNode
-  defaultOpen?: boolean
-  minHeight?: number
-  maxHeight?: number
-  className?: string
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  minHeight?: number;
+  maxHeight?: number;
+  className?: string;
 }
 
 // Snap points for the drawer
 const SNAP_POINTS = {
-  closed: 48,    // Just the header visible
-  partial: 200,  // Partial view
-  full: 400,     // Full expanded view
-}
+  closed: 48, // Just the header visible
+  partial: 200, // Partial view
+  full: 400, // Full expanded view
+};
 
 export function BottomDrawer({
   children,
@@ -26,84 +31,112 @@ export function BottomDrawer({
   maxHeight = SNAP_POINTS.full,
   className,
 }: BottomDrawerProps) {
-  const [height, setHeight] = useState(defaultOpen ? SNAP_POINTS.partial : SNAP_POINTS.closed)
-  const [isDragging, setIsDragging] = useState(false)
-  const dragControls = useDragControls()
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState(
+    defaultOpen ? SNAP_POINTS.partial : SNAP_POINTS.closed,
+  );
+  const [isDragging, setIsDragging] = useState(false);
+  const dragControls = useDragControls();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const isOpen = height > SNAP_POINTS.closed
+  const isOpen = height > SNAP_POINTS.closed;
 
   // Handle drag end - snap to nearest point
-  const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false)
-    const velocity = info.velocity.y
-    const currentHeight = height - info.offset.y
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      setIsDragging(false);
+      const velocity = info.velocity.y;
+      const currentHeight = height - info.offset.y;
 
-    // If dragging fast, snap in drag direction
-    if (Math.abs(velocity) > 500) {
-      if (velocity > 0) {
-        // Dragging down
-        setHeight(currentHeight > SNAP_POINTS.partial ? SNAP_POINTS.partial : SNAP_POINTS.closed)
-      } else {
-        // Dragging up
-        setHeight(currentHeight < SNAP_POINTS.partial ? SNAP_POINTS.partial : SNAP_POINTS.full)
+      // If dragging fast, snap in drag direction
+      if (Math.abs(velocity) > 500) {
+        if (velocity > 0) {
+          // Dragging down
+          setHeight(
+            currentHeight > SNAP_POINTS.partial
+              ? SNAP_POINTS.partial
+              : SNAP_POINTS.closed,
+          );
+        } else {
+          // Dragging up
+          setHeight(
+            currentHeight < SNAP_POINTS.partial
+              ? SNAP_POINTS.partial
+              : SNAP_POINTS.full,
+          );
+        }
+        return;
       }
-      return
-    }
 
-    // Otherwise snap to nearest point
-    const snapPoints = [SNAP_POINTS.closed, SNAP_POINTS.partial, SNAP_POINTS.full]
-    let nearest = snapPoints[0] ?? SNAP_POINTS.closed
-    let nearestDist = Math.abs(currentHeight - nearest)
+      // Otherwise snap to nearest point
+      const snapPoints = [
+        SNAP_POINTS.closed,
+        SNAP_POINTS.partial,
+        SNAP_POINTS.full,
+      ];
+      let nearest = snapPoints[0] ?? SNAP_POINTS.closed;
+      let nearestDist = Math.abs(currentHeight - nearest);
 
-    for (const point of snapPoints) {
-      const dist = Math.abs(currentHeight - point)
-      if (dist < nearestDist) {
-        nearest = point
-        nearestDist = dist
+      for (const point of snapPoints) {
+        const dist = Math.abs(currentHeight - point);
+        if (dist < nearestDist) {
+          nearest = point;
+          nearestDist = dist;
+        }
       }
-    }
 
-    setHeight(nearest ?? SNAP_POINTS.closed)
-  }, [height])
+      setHeight(nearest ?? SNAP_POINTS.closed);
+    },
+    [height],
+  );
 
   // Handle drag movement
-  const handleDrag = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const newHeight = height - info.offset.y
-    // Clamp between min and max
-    const clampedHeight = Math.max(minHeight, Math.min(maxHeight, newHeight))
-    // Only update if significantly different to reduce re-renders
-    if (Math.abs(clampedHeight - height) > 2) {
-      setHeight(clampedHeight)
-    }
-  }, [height, minHeight, maxHeight])
+  const handleDrag = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const newHeight = height - info.offset.y;
+      // Clamp between min and max
+      const clampedHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+      // Only update if significantly different to reduce re-renders
+      if (Math.abs(clampedHeight - height) > 2) {
+        setHeight(clampedHeight);
+      }
+    },
+    [height, minHeight, maxHeight],
+  );
 
   // Toggle drawer
   const toggleDrawer = useCallback(() => {
     if (height === SNAP_POINTS.closed) {
-      setHeight(SNAP_POINTS.partial)
+      setHeight(SNAP_POINTS.partial);
     } else if (height === SNAP_POINTS.partial) {
-      setHeight(SNAP_POINTS.full)
+      setHeight(SNAP_POINTS.full);
     } else {
-      setHeight(SNAP_POINTS.closed)
+      setHeight(SNAP_POINTS.closed);
     }
-  }, [height])
+  }, [height]);
 
   // Handle double click to fully expand/collapse
   const handleDoubleClick = useCallback(() => {
-    setHeight(height === SNAP_POINTS.full ? SNAP_POINTS.closed : SNAP_POINTS.full)
-  }, [height])
+    setHeight(
+      height === SNAP_POINTS.full ? SNAP_POINTS.closed : SNAP_POINTS.full,
+    );
+  }, [height]);
 
   return (
     <motion.div
       ref={containerRef}
-      initial={{ height: defaultOpen ? SNAP_POINTS.partial : SNAP_POINTS.closed }}
+      initial={{
+        height: defaultOpen ? SNAP_POINTS.partial : SNAP_POINTS.closed,
+      }}
       animate={{ height }}
-      transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
+      transition={
+        isDragging
+          ? { duration: 0 }
+          : { type: "spring", stiffness: 300, damping: 30 }
+      }
       className={cn(
-        'absolute bottom-0 left-0 right-0 bg-bg-secondary border-t border-border-subtle',
-        'flex flex-col overflow-hidden z-20',
-        className
+        "absolute bottom-0 left-0 right-0 bg-bg-secondary border-t border-border-subtle",
+        "flex flex-col overflow-hidden z-20",
+        className,
       )}
     >
       {/* Drag Handle */}
@@ -152,7 +185,7 @@ export function BottomDrawer({
         )}
       </AnimatePresence>
     </motion.div>
-  )
+  );
 }
 
 // Chevron icon with animation
@@ -171,5 +204,5 @@ function ChevronIcon({ isOpen }: { isOpen: boolean }) {
     >
       <path d="M3 5l4 4 4-4" />
     </motion.svg>
-  )
+  );
 }

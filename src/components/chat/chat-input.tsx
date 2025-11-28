@@ -1,63 +1,63 @@
-'use client'
+"use client";
 
 /**
  * Chat Input Component - Terminal-style input for chat messages
  */
 
-import { useState, useRef, useCallback, type KeyboardEvent } from 'react'
-import { cn } from '@/lib/utils'
+import { useState, useRef, useCallback, type KeyboardEvent } from "react";
+import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
-  onSubmit: (message: string) => void
-  disabled?: boolean
-  placeholder?: string
-  className?: string
+  onSubmit: (message: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  className?: string;
 }
 
 export function ChatInput({
   onSubmit,
   disabled = false,
-  placeholder = 'Ask about this composition...',
+  placeholder = "Ask about this composition...",
   className,
 }: ChatInputProps) {
-  const [value, setValue] = useState('')
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const [value, setValue] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = useCallback(() => {
-    const trimmed = value.trim()
+    const trimmed = value.trim();
     if (trimmed && !disabled) {
-      onSubmit(trimmed)
-      setValue('')
+      onSubmit(trimmed);
+      setValue("");
       // Reset textarea height
       if (inputRef.current) {
-        inputRef.current.style.height = 'auto'
+        inputRef.current.style.height = "auto";
       }
     }
-  }, [value, disabled, onSubmit])
+  }, [value, disabled, onSubmit]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        handleSubmit()
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit();
       }
     },
-    [handleSubmit]
-  )
+    [handleSubmit],
+  );
 
   // Auto-resize textarea
   const handleInput = useCallback(() => {
     if (inputRef.current) {
-      inputRef.current.style.height = 'auto'
-      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`;
     }
-  }, [])
+  }, []);
 
   return (
     <div
       className={cn(
-        'flex items-end gap-2 p-3 bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)]',
-        className
+        "flex items-end gap-2 p-3 bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)]",
+        className,
       )}
     >
       {/* Terminal prompt indicator */}
@@ -77,25 +77,25 @@ export function ChatInput({
           placeholder={placeholder}
           rows={1}
           className={cn(
-            'w-full bg-[var(--bg-primary)] border border-[var(--border-default)] rounded-md',
-            'px-3 py-2 text-sm text-[var(--text-primary)] font-mono',
-            'placeholder:text-[var(--text-tertiary)]',
-            'focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--border-active)]',
-            'resize-none overflow-hidden',
-            'transition-colors duration-150',
-            disabled && 'opacity-50 cursor-not-allowed'
+            "w-full bg-[var(--bg-primary)] border border-[var(--border-default)] rounded-md",
+            "px-3 py-2 text-sm text-[var(--text-primary)] font-mono",
+            "placeholder:text-[var(--text-tertiary)]",
+            "focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--border-active)]",
+            "resize-none overflow-hidden",
+            "transition-colors duration-150",
+            disabled && "opacity-50 cursor-not-allowed",
           )}
-          style={{ minHeight: '40px' }}
+          style={{ minHeight: "40px" }}
         />
 
         {/* Character count */}
         {value.length > 1500 && (
           <div
             className={cn(
-              'absolute right-2 bottom-2 text-xs font-mono',
+              "absolute right-2 bottom-2 text-xs font-mono",
               value.length > 1900
-                ? 'text-[var(--accent-danger)]'
-                : 'text-[var(--text-tertiary)]'
+                ? "text-[var(--accent-danger)]"
+                : "text-[var(--text-tertiary)]",
             )}
           >
             {value.length}/2000
@@ -108,12 +108,12 @@ export function ChatInput({
         onClick={handleSubmit}
         disabled={disabled || !value.trim()}
         className={cn(
-          'flex-shrink-0 px-4 py-2 rounded-md font-medium text-sm',
-          'bg-[var(--accent-primary)] text-white',
-          'hover:bg-[var(--accent-primary)]/80',
-          'focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]',
-          'transition-all duration-150',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-primary)]'
+          "flex-shrink-0 px-4 py-2 rounded-md font-medium text-sm",
+          "bg-[var(--accent-primary)] text-white",
+          "hover:bg-[var(--accent-primary)]/80",
+          "focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]",
+          "transition-all duration-150",
+          "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-primary)]",
         )}
         title="Send message (Enter)"
       >
@@ -132,5 +132,5 @@ export function ChatInput({
         </svg>
       </button>
     </div>
-  )
+  );
 }

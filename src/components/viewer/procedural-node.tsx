@@ -1,54 +1,59 @@
-'use client'
+"use client";
 
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
-import { RoundedBox, Cylinder, Sphere, Capsule } from '@react-three/drei'
-import * as THREE from 'three'
-import type { CompositionNode, CompositionType } from '@/types'
-import { getNodeColor, typeMaterials } from '@/lib/three/composition-utils'
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import { RoundedBox, Cylinder, Sphere, Capsule } from "@react-three/drei";
+import * as THREE from "three";
+import type { CompositionNode, CompositionType } from "@/types";
+import { getNodeColor, typeMaterials } from "@/lib/three/composition-utils";
 
 // Shape mapping based on composition type
-export type ShapeType = 'rounded-box' | 'cylinder' | 'capsule' | 'sphere'
+export type ShapeType = "rounded-box" | "cylinder" | "capsule" | "sphere";
 
 export const TYPE_SHAPES: Record<CompositionType, ShapeType> = {
-  product: 'rounded-box',
-  component: 'cylinder',
-  material: 'capsule',
-  chemical: 'sphere',
-  element: 'sphere',
-}
+  product: "rounded-box",
+  component: "cylinder",
+  material: "capsule",
+  chemical: "sphere",
+  element: "sphere",
+};
 
 interface ProceduralNodeProps {
-  node: CompositionNode
-  size: number
-  isHovered: boolean
-  isSelected: boolean
+  node: CompositionNode;
+  size: number;
+  isHovered: boolean;
+  isSelected: boolean;
 }
 
-export function ProceduralNode({ node, size, isHovered, isSelected }: ProceduralNodeProps) {
-  const meshRef = useRef<THREE.Mesh | THREE.Group>(null)
+export function ProceduralNode({
+  node,
+  size,
+  isHovered,
+  isSelected,
+}: ProceduralNodeProps) {
+  const meshRef = useRef<THREE.Mesh | THREE.Group>(null);
 
-  const shape = TYPE_SHAPES[node.type]
-  const color = getNodeColor(node)
-  const material = typeMaterials[node.type]
+  const shape = TYPE_SHAPES[node.type];
+  const color = getNodeColor(node);
+  const material = typeMaterials[node.type];
 
   // Rotation animation on hover
   useFrame(() => {
     if (meshRef.current && isHovered) {
-      meshRef.current.rotation.y += 0.01
+      meshRef.current.rotation.y += 0.01;
     }
-  })
+  });
 
   const materialProps = {
     color,
     metalness: material.metalness,
     roughness: material.roughness,
-    emissive: isHovered || isSelected ? color : '#000000',
+    emissive: isHovered || isSelected ? color : "#000000",
     emissiveIntensity: isHovered ? 0.4 : isSelected ? 0.2 : 0,
-  }
+  };
 
   switch (shape) {
-    case 'rounded-box':
+    case "rounded-box":
       return (
         <RoundedBox
           ref={meshRef as React.RefObject<THREE.Mesh>}
@@ -58,9 +63,9 @@ export function ProceduralNode({ node, size, isHovered, isSelected }: Procedural
         >
           <meshStandardMaterial {...materialProps} />
         </RoundedBox>
-      )
+      );
 
-    case 'cylinder':
+    case "cylinder":
       return (
         <Cylinder
           ref={meshRef as React.RefObject<THREE.Mesh>}
@@ -68,9 +73,9 @@ export function ProceduralNode({ node, size, isHovered, isSelected }: Procedural
         >
           <meshStandardMaterial {...materialProps} />
         </Cylinder>
-      )
+      );
 
-    case 'capsule':
+    case "capsule":
       return (
         <Capsule
           ref={meshRef as React.RefObject<THREE.Mesh>}
@@ -78,9 +83,9 @@ export function ProceduralNode({ node, size, isHovered, isSelected }: Procedural
         >
           <meshStandardMaterial {...materialProps} />
         </Capsule>
-      )
+      );
 
-    case 'sphere':
+    case "sphere":
     default:
       return (
         <Sphere
@@ -89,6 +94,6 @@ export function ProceduralNode({ node, size, isHovered, isSelected }: Procedural
         >
           <meshStandardMaterial {...materialProps} />
         </Sphere>
-      )
+      );
   }
 }

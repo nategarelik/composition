@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
-import { Suspense } from 'react'
-import { useCompositionStore } from '@/stores'
-import { CompositionTree } from './composition-tree'
-import { CameraControls } from './camera-controls'
-import { StarsBackground } from './stars-background'
+import { Suspense } from "react";
+import { useCompositionStore } from "@/stores";
+import { CompositionTree } from "./composition-tree";
+import { CameraControls } from "./camera-controls";
+import { StarsBackground } from "./stars-background";
 
 interface CompositionSceneProps {
-  debug?: boolean
+  debug?: boolean;
 }
 
 export function CompositionScene({ debug = false }: CompositionSceneProps) {
-  const composition = useCompositionStore((s) => s.composition)
-  const depthLevel = useCompositionStore((s) => s.depthLevel)
-  const isExploded = useCompositionStore((s) => s.isExploded)
+  const composition = useCompositionStore((s) => s.composition);
+  const depthLevel = useCompositionStore((s) => s.depthLevel);
+  const isExploded = useCompositionStore((s) => s.isExploded);
 
   return (
     <>
@@ -27,17 +27,20 @@ export function CompositionScene({ debug = false }: CompositionSceneProps) {
       <pointLight position={[0, 10, 0]} intensity={0.5} />
 
       {/* Simple environment lighting */}
-      <hemisphereLight
-        color="#ffffff"
-        groundColor="#444444"
-        intensity={0.6}
-      />
+      <hemisphereLight color="#ffffff" groundColor="#444444" intensity={0.6} />
 
       {/* Stars Background (custom implementation) */}
-      <StarsBackground radius={100} depth={50} count={1000} factor={4} fade speed={1} />
+      <StarsBackground
+        radius={100}
+        depth={50}
+        count={1000}
+        factor={4}
+        fade
+        speed={1}
+      />
 
       {/* Background */}
-      <color attach="background" args={['#0a0a0a']} />
+      <color attach="background" args={["#0a0a0a"]} />
 
       {/* Composition visualization */}
       <Suspense fallback={null}>
@@ -58,5 +61,5 @@ export function CompositionScene({ debug = false }: CompositionSceneProps) {
         </>
       )}
     </>
-  )
+  );
 }

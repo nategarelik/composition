@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { useCompositionStore } from '@/stores'
+import { useCompositionStore } from "@/stores";
 
 export function NodeTooltip() {
-  const hoveredNode = useCompositionStore((s) => s.hoveredNode)
+  const hoveredNode = useCompositionStore((s) => s.hoveredNode);
 
-  if (!hoveredNode) return null
+  if (!hoveredNode) return null;
 
   return (
     <div className="absolute top-4 left-4 pointer-events-none z-10">
@@ -15,12 +15,16 @@ export function NodeTooltip() {
           {hoveredNode.percentage.toFixed(1)}% - {hoveredNode.type}
         </div>
         {hoveredNode.symbol && (
-          <div className="text-blue-400 text-sm mt-2">Element: {hoveredNode.symbol}</div>
+          <div className="text-blue-400 text-sm mt-2">
+            Element: {hoveredNode.symbol}
+          </div>
         )}
         {hoveredNode.description && (
-          <div className="text-gray-500 text-xs mt-2 max-w-xs">{hoveredNode.description}</div>
+          <div className="text-gray-500 text-xs mt-2 max-w-xs">
+            {hoveredNode.description}
+          </div>
         )}
       </div>
     </div>
-  )
+  );
 }

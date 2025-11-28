@@ -1,16 +1,19 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { useCompositionStore } from '@/stores'
-import { ViewerControls, NodeTooltip } from '@/components/viewer'
-import { ChatDrawer } from '@/components/chat'
-import type { Composition } from '@/types'
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useCompositionStore } from "@/stores";
+import { ViewerControls, NodeTooltip } from "@/components/viewer";
+import { ChatDrawer } from "@/components/chat";
+import type { Composition } from "@/types";
 
 // Dynamically import Canvas to avoid SSR issues with drei
 const CompositionCanvas = dynamic(
-  () => import('@/components/viewer/composition-canvas').then((mod) => mod.CompositionCanvas),
+  () =>
+    import("@/components/viewer/composition-canvas").then(
+      (mod) => mod.CompositionCanvas,
+    ),
   {
     ssr: false,
     loading: () => (
@@ -21,41 +24,43 @@ const CompositionCanvas = dynamic(
         </div>
       </div>
     ),
-  }
-)
+  },
+);
 
 interface CompositionViewerClientProps {
-  composition: Composition
+  composition: Composition;
 }
 
-export function CompositionViewerClient({ composition }: CompositionViewerClientProps) {
-  const setComposition = useCompositionStore((s) => s.setComposition)
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
-  const [isSharing, setIsSharing] = useState(false)
+export function CompositionViewerClient({
+  composition,
+}: CompositionViewerClientProps) {
+  const setComposition = useCompositionStore((s) => s.setComposition);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
-    setComposition(composition)
-  }, [composition, setComposition])
+    setComposition(composition);
+  }, [composition, setComposition]);
 
   const handleShare = async () => {
-    setIsSharing(true)
+    setIsSharing(true);
     try {
-      const response = await fetch('/api/share', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ compositionId: composition.id }),
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       if (data.success) {
-        setShareUrl(data.data.url)
-        await navigator.clipboard.writeText(data.data.url)
+        setShareUrl(data.data.url);
+        await navigator.clipboard.writeText(data.data.url);
       }
     } catch (error) {
-      console.error('Share error:', error)
+      console.error("Share error:", error);
     } finally {
-      setIsSharing(false)
+      setIsSharing(false);
     }
-  }
+  };
 
   return (
     <main className="min-h-screen flex flex-col bg-black">
@@ -66,8 +71,18 @@ export function CompositionViewerClient({ composition }: CompositionViewerClient
             href="/"
             className="text-gray-400 hover:text-white transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
           </Link>
           <div>
@@ -79,11 +94,11 @@ export function CompositionViewerClient({ composition }: CompositionViewerClient
         <div className="flex items-center gap-3">
           <span
             className={`px-2 py-1 text-xs rounded-full ${
-              composition.confidence === 'verified'
-                ? 'bg-green-900 text-green-300'
-                : composition.confidence === 'estimated'
-                ? 'bg-yellow-900 text-yellow-300'
-                : 'bg-red-900 text-red-300'
+              composition.confidence === "verified"
+                ? "bg-green-900 text-green-300"
+                : composition.confidence === "estimated"
+                  ? "bg-yellow-900 text-yellow-300"
+                  : "bg-red-900 text-red-300"
             }`}
           >
             {composition.confidence}
@@ -96,11 +111,21 @@ export function CompositionViewerClient({ composition }: CompositionViewerClient
             {isSharing ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                />
               </svg>
             )}
-            {shareUrl ? 'Copied!' : 'Share'}
+            {shareUrl ? "Copied!" : "Share"}
           </button>
         </div>
       </header>
@@ -122,7 +147,8 @@ export function CompositionViewerClient({ composition }: CompositionViewerClient
             <span>{composition.viewCount} views</span>
             <span>{composition.shareCount} shares</span>
             <span>
-              Researched {new Date(composition.researchedAt).toLocaleDateString()}
+              Researched{" "}
+              {new Date(composition.researchedAt).toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -131,5 +157,5 @@ export function CompositionViewerClient({ composition }: CompositionViewerClient
       {/* Chat Drawer */}
       <ChatDrawer composition={composition} />
     </main>
-  )
+  );
 }

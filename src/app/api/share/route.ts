@@ -1,56 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { nanoid } from 'nanoid'
-import { z } from 'zod'
-import { db } from '@/lib/db'
-import type { ApiResponse, ShareResponse } from '@/types'
+import { NextRequest, NextResponse } from "next/server";
+import { nanoid } from "nanoid";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import type { ApiResponse, ShareResponse } from "@/types";
 
 // Zod schema for request validation
 const shareRequestSchema = z.object({
-  compositionId: z.string().min(1, 'compositionId is required').max(50),
+  compositionId: z.string().min(1, "compositionId is required").max(50),
   depthLevel: z.number().int().min(1).max(10).default(4),
-  viewMode: z.enum(['exploded', 'compact', 'slice']).default('exploded'),
-})
+  viewMode: z.enum(["exploded", "compact", "slice"]).default("exploded"),
+});
 
-export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<ShareResponse>>> {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<ApiResponse<ShareResponse>>> {
   try {
-    const body = await request.json()
-    const parseResult = shareRequestSchema.safeParse(body)
+    const body = await request.json();
+    const parseResult = shareRequestSchema.safeParse(body);
 
     if (!parseResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'INVALID_REQUEST',
-            message: parseResult.error.issues[0]?.message ?? 'Invalid request',
+            code: "INVALID_REQUEST",
+            message: parseResult.error.issues[0]?.message ?? "Invalid request",
           },
         },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
-    const { compositionId, depthLevel, viewMode } = parseResult.data
+    const { compositionId, depthLevel, viewMode } = parseResult.data;
 
     // Verify composition exists
     const composition = await db.composition.findUnique({
       where: { id: compositionId },
-    })
+    });
 
     if (!composition) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'NOT_FOUND',
-            message: 'Composition not found',
+            code: "NOT_FOUND",
+            message: "Composition not found",
           },
         },
-        { status: 404 }
-      )
+        { status: 404 },
+      );
     }
 
     // Create share link
-    const shortCode = nanoid(8)
+    const shortCode = nanoid(8);
     await db.share.create({
       data: {
         shortCode,
@@ -58,15 +60,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         depthLevel,
         viewMode,
       },
-    })
+    });
 
     // Update share count
     await db.composition.update({
       where: { id: compositionId },
       data: { shareCount: { increment: 1 } },
-    })
+    });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
     return NextResponse.json({
       success: true,
@@ -77,18 +79,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         depthLevel,
         viewMode,
       },
-    })
+    });
   } catch (error) {
-    console.error('Create share error:', error)
+    console.error("Create share error:", error);
     return NextResponse.json(
       {
         success: false,
         error: {
-          code: 'SHARE_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to create share link',
+          code: "SHARE_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to create share link",
         },
       },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

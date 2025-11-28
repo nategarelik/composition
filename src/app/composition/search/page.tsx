@@ -1,8 +1,8 @@
-import { Suspense } from 'react'
-import { SearchPageClient } from './search-client'
+import { Suspense } from "react";
+import { SearchPageClient } from "./search-client";
 
 // Force dynamic rendering to avoid SSG issues
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default function SearchPage() {
   return (
@@ -18,5 +18,5 @@ export default function SearchPage() {
     >
       <SearchPageClient />
     </Suspense>
-  )
+  );
 }

@@ -1,58 +1,62 @@
-'use client'
+"use client";
 
 /**
  * Properties Panel Component - Right panel showing selected node data
  */
 
-import { cn } from '@/lib/utils'
-import type { CompositionNode } from '@/types/composition'
+import { cn } from "@/lib/utils";
+import type { CompositionNode } from "@/types/composition";
 
 interface DataReadoutProps {
-  label: string
-  value: string | number
-  unit?: string
-  color?: string
+  label: string;
+  value: string | number;
+  unit?: string;
+  color?: string;
 }
 
 function DataReadout({ label, value, unit, color }: DataReadoutProps) {
   return (
     <div className="flex justify-between items-center py-1.5 border-b border-[var(--border-subtle)]/50 last:border-0">
-      <span className="font-mono text-xs text-[var(--text-secondary)]">{label}</span>
+      <span className="font-mono text-xs text-[var(--text-secondary)]">
+        {label}
+      </span>
       <span
         className="font-mono text-xs tabular-nums"
-        style={{ color: color || 'var(--text-mono)' }}
+        style={{ color: color || "var(--text-mono)" }}
       >
         {value}
-        {unit && <span className="text-[var(--text-secondary)] ml-1">{unit}</span>}
+        {unit && (
+          <span className="text-[var(--text-secondary)] ml-1">{unit}</span>
+        )}
       </span>
     </div>
-  )
+  );
 }
 
 interface ConfidenceBadgeProps {
-  level: 'verified' | 'estimated' | 'speculative'
+  level: "verified" | "estimated" | "speculative";
 }
 
 function ConfidenceBadge({ level }: ConfidenceBadgeProps) {
   const config = {
     verified: {
-      label: 'Verified',
-      color: 'var(--confidence-verified)',
-      icon: '✓',
+      label: "Verified",
+      color: "var(--confidence-verified)",
+      icon: "✓",
     },
     estimated: {
-      label: 'Estimated',
-      color: 'var(--confidence-estimated)',
-      icon: '≈',
+      label: "Estimated",
+      color: "var(--confidence-estimated)",
+      icon: "≈",
     },
     speculative: {
-      label: 'Speculative',
-      color: 'var(--confidence-speculative)',
-      icon: '?',
+      label: "Speculative",
+      color: "var(--confidence-speculative)",
+      icon: "?",
     },
-  }
+  };
 
-  const { label, color, icon } = config[level]
+  const { label, color, icon } = config[level];
 
   return (
     <div
@@ -66,15 +70,15 @@ function ConfidenceBadge({ level }: ConfidenceBadgeProps) {
       <span>{icon}</span>
       <span>{label}</span>
     </div>
-  )
+  );
 }
 
 interface PropertiesPanelProps {
-  className?: string
-  selectedNode?: CompositionNode | null
-  totalNodes?: number
-  maxDepth?: number
-  verifiedPercentage?: number
+  className?: string;
+  selectedNode?: CompositionNode | null;
+  totalNodes?: number;
+  maxDepth?: number;
+  verifiedPercentage?: number;
 }
 
 export function PropertiesPanel({
@@ -87,9 +91,9 @@ export function PropertiesPanel({
   return (
     <div
       className={cn(
-        'flex flex-col bg-[var(--bg-panel)] border-l border-[var(--border-subtle)]',
-        'w-64 h-full overflow-y-auto',
-        className
+        "flex flex-col bg-[var(--bg-panel)] border-l border-[var(--border-subtle)]",
+        "w-64 h-full overflow-y-auto",
+        className,
       )}
     >
       {/* Selected Node Section */}
@@ -188,7 +192,9 @@ export function PropertiesPanel({
           ) : (
             <div className="text-xs text-[var(--text-tertiary)] text-center py-8">
               No node selected
-              <div className="mt-1 text-[10px]">Click a node to view properties</div>
+              <div className="mt-1 text-[10px]">
+                Click a node to view properties
+              </div>
             </div>
           )}
         </div>
@@ -212,14 +218,18 @@ export function PropertiesPanel({
               unit="%"
               color={
                 verifiedPercentage >= 75
-                  ? 'var(--confidence-verified)'
+                  ? "var(--confidence-verified)"
                   : verifiedPercentage >= 50
-                    ? 'var(--confidence-estimated)'
-                    : 'var(--confidence-speculative)'
+                    ? "var(--confidence-estimated)"
+                    : "var(--confidence-speculative)"
               }
             />
             {selectedNode?.children && (
-              <DataReadout label="Children" value={selectedNode.children.length} unit="nodes" />
+              <DataReadout
+                label="Children"
+                value={selectedNode.children.length}
+                unit="nodes"
+              />
             )}
           </div>
         </div>
@@ -235,12 +245,17 @@ export function PropertiesPanel({
 
         <div className="p-3">
           <div className="space-y-0">
-            <DataReadout label="FPS" value={60} unit="fps" color="var(--accent-secondary)" />
+            <DataReadout
+              label="FPS"
+              value={60}
+              unit="fps"
+              color="var(--accent-secondary)"
+            />
             <DataReadout label="Memory" value={124} unit="MB" />
             <DataReadout label="Render" value="WebGL 2.0" />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
