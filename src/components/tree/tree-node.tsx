@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { CompositionNode } from '@/types'
 import { useCompositionStore } from '@/stores'
 import { cn } from '@/lib/utils'
@@ -9,6 +10,27 @@ interface TreeNodeProps {
   node: CompositionNode
   depth: number
 }
+
+// Animation variants for tree expand/collapse
+const childrenVariants = {
+  hidden: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1] as const, // easeInOut bezier curve
+    },
+  },
+  visible: {
+    height: 'auto',
+    opacity: 1,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1] as const,
+    },
+  },
+}
+
 
 // Type-specific colors matching the design system
 const TYPE_COLORS: Record<string, string> = {
@@ -146,40 +168,47 @@ export function TreeNode({ node, depth }: TreeNodeProps) {
         <span className="text-[8px]">{confidenceIndicator}</span>
       </div>
 
-      {/* Children */}
-      {hasChildren && isExpanded && (
-        <div className="relative">
-          {/* Vertical line connecting children */}
-          <div
-            className="absolute left-0 top-0 bottom-0 border-l border-border-subtle"
-            style={{ marginLeft: `${depth * 12 + 11}px` }}
-          />
-          {node.children!.map((child) => (
-            <TreeNode key={child.id} node={child} depth={depth + 1} />
-          ))}
-        </div>
-      )}
+      {/* Children with animation */}
+      <AnimatePresence initial={false}>
+        {hasChildren && isExpanded && (
+          <motion.div
+            key="children"
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={childrenVariants}
+            className="relative overflow-hidden"
+          >
+            {/* Vertical line connecting children */}
+            <div
+              className="absolute left-0 top-0 bottom-0 border-l border-border-subtle"
+              style={{ marginLeft: `${depth * 12 + 11}px` }}
+            />
+            {node.children!.map((child) => (
+              <TreeNode key={child.id} node={child} depth={depth + 1} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
-// Chevron icon component
+// Chevron icon component with framer-motion animation
 function ChevronIcon({ isExpanded }: { isExpanded: boolean }) {
   return (
-    <svg
+    <motion.svg
       width="10"
       height="10"
       viewBox="0 0 10 10"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className={cn(
-        'transition-transform duration-150',
-        isExpanded ? 'rotate-90' : 'rotate-0'
-      )}
+      animate={{ rotate: isExpanded ? 90 : 0 }}
+      transition={{ duration: 0.15, ease: 'easeInOut' }}
     >
       <path d="M3 2l4 3-4 3" />
-    </svg>
+    </motion.svg>
   )
 }
 

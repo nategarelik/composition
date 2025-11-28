@@ -8,10 +8,15 @@ interface CompositionTreePanelProps {
   className?: string
 }
 
-export function CompositionTreePanel({ className }: CompositionTreePanelProps) {
+export function CompositionTreePanel({
+  className,
+}: CompositionTreePanelProps) {
   const composition = useCompositionStore((s) => s.composition)
   const expandAllTree = useCompositionStore((s) => s.expandAllTree)
   const collapseAllTree = useCompositionStore((s) => s.collapseAllTree)
+
+  // Count nodes for display
+  const nodeCount = composition ? countNodes(composition.root) : 0
 
   if (!composition) {
     return (
@@ -63,7 +68,7 @@ export function CompositionTreePanel({ className }: CompositionTreePanelProps) {
       {/* Footer Stats */}
       <div className="flex items-center justify-between px-3 py-1.5 border-t border-border-subtle bg-bg-secondary">
         <span className="font-mono text-[10px] text-text-secondary">
-          {countNodes(composition.root)} nodes
+          {nodeCount} nodes
         </span>
         <span className="font-mono text-[10px] text-text-secondary">
           {composition.confidence}
