@@ -11,6 +11,13 @@ interface CompositionState {
   depthLevel: number
   maxDepth: number
   isExploded: boolean
+
+  // Tree navigation state (Phase 2)
+  expandedNodes: Set<string>      // Nodes whose children are exploded in 3D
+  treeExpandedNodes: Set<string>  // Nodes expanded in tree UI
+  focusedNodeId: string | null    // Camera focus target
+
+  // Actions
   setComposition: (composition: Composition) => void
   selectNode: (node: CompositionNode | null) => void
   setHoveredNode: (node: CompositionNode | null) => void
@@ -18,6 +25,39 @@ interface CompositionState {
   setDepthLevel: (level: number) => void
   toggleExploded: () => void
   reset: () => void
+
+  // Tree navigation actions
+  toggleNodeExpansion: (nodeId: string) => void   // Toggle 3D explosion for a node
+  toggleTreeNode: (nodeId: string) => void        // Toggle tree UI expansion
+  expandToNode: (nodeId: string) => void          // Expand tree path to a node
+  setFocusedNode: (nodeId: string | null) => void // Set camera focus target
+  collapseAllTree: () => void                     // Collapse all tree nodes
+  expandAllTree: () => void                       // Expand all tree nodes
+}
+
+// Helper to get all node IDs in a composition tree
+function getAllNodeIds(node: CompositionNode): string[] {
+  const ids = [node.id]
+  if (node.children) {
+    for (const child of node.children) {
+      ids.push(...getAllNodeIds(child))
+    }
+  }
+  return ids
+}
+
+// Helper to find path to a node
+function findPathToNode(root: CompositionNode, targetId: string, path: string[] = []): string[] | null {
+  if (root.id === targetId) {
+    return [...path, root.id]
+  }
+  if (root.children) {
+    for (const child of root.children) {
+      const result = findPathToNode(child, targetId, [...path, root.id])
+      if (result) return result
+    }
+  }
+  return null
 }
 
 export const useCompositionStore = create<CompositionState>((set) => ({
@@ -29,12 +69,20 @@ export const useCompositionStore = create<CompositionState>((set) => ({
   maxDepth: 5,
   isExploded: false,
 
+  // Tree navigation state
+  expandedNodes: new Set<string>(),
+  treeExpandedNodes: new Set<string>(),
+  focusedNodeId: null,
+
   setComposition: (composition) =>
     set({
       composition,
       selectedNode: null,
       hoveredNode: null,
       isExploded: false,
+      expandedNodes: new Set<string>(),
+      treeExpandedNodes: new Set<string>([composition.root.id]), // Auto-expand root
+      focusedNodeId: null,
     }),
 
   selectNode: (selectedNode) => set({ selectedNode }),
@@ -58,5 +106,70 @@ export const useCompositionStore = create<CompositionState>((set) => ({
       viewMode: 'exploded',
       depthLevel: 4,
       isExploded: false,
+      expandedNodes: new Set<string>(),
+      treeExpandedNodes: new Set<string>(),
+      focusedNodeId: null,
+    }),
+
+  // Toggle 3D explosion for a specific node
+  toggleNodeExpansion: (nodeId) =>
+    set((state) => {
+      const newExpanded = new Set(state.expandedNodes)
+      if (newExpanded.has(nodeId)) {
+        newExpanded.delete(nodeId)
+      } else {
+        newExpanded.add(nodeId)
+      }
+      return { expandedNodes: newExpanded }
+    }),
+
+  // Toggle tree UI expansion
+  toggleTreeNode: (nodeId) =>
+    set((state) => {
+      const newExpanded = new Set(state.treeExpandedNodes)
+      if (newExpanded.has(nodeId)) {
+        newExpanded.delete(nodeId)
+      } else {
+        newExpanded.add(nodeId)
+      }
+      return { treeExpandedNodes: newExpanded }
+    }),
+
+  // Expand tree path to reveal a specific node
+  expandToNode: (nodeId) =>
+    set((state) => {
+      if (!state.composition) return state
+
+      const path = findPathToNode(state.composition.root, nodeId)
+      if (!path) return state
+
+      const newExpanded = new Set(state.treeExpandedNodes)
+      // Expand all parent nodes (not the target itself)
+      for (let i = 0; i < path.length - 1; i++) {
+        const nodeId = path[i]
+        if (nodeId) {
+          newExpanded.add(nodeId)
+        }
+      }
+      return { treeExpandedNodes: newExpanded }
+    }),
+
+  // Set camera focus target
+  setFocusedNode: (focusedNodeId) => set({ focusedNodeId }),
+
+  // Collapse all tree nodes
+  collapseAllTree: () =>
+    set((state) => ({
+      treeExpandedNodes: state.composition
+        ? new Set<string>([state.composition.root.id]) // Keep root expanded
+        : new Set<string>(),
+    })),
+
+  // Expand all tree nodes
+  expandAllTree: () =>
+    set((state) => {
+      if (!state.composition) return state
+      const allIds = getAllNodeIds(state.composition.root)
+      return { treeExpandedNodes: new Set(allIds) }
     }),
 }))

@@ -34,8 +34,12 @@ export function CompositionNodeMesh({
   const [hovered, setHovered] = useState(false)
   const selectNode = useCompositionStore((s) => s.selectNode)
   const setHoveredNode = useCompositionStore((s) => s.setHoveredNode)
+  const setFocusedNode = useCompositionStore((s) => s.setFocusedNode)
+  const toggleNodeExpansion = useCompositionStore((s) => s.toggleNodeExpansion)
+  const expandToNode = useCompositionStore((s) => s.expandToNode)
   const selectedNode = useCompositionStore((s) => s.selectedNode)
   const isSelected = selectedNode?.id === node.id
+  const hasChildren = node.children && node.children.length > 0
 
   const offset = useMemo(
     () => calculateExplodedPosition(index, siblingCount, depth, isExploded),
@@ -108,6 +112,17 @@ export function CompositionNodeMesh({
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
     selectNode(node)
+    // Also expand tree to this node for sync
+    expandToNode(node.id)
+  }
+
+  const handleDoubleClick = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation()
+    // Double-click: Focus camera on this node and toggle expansion
+    setFocusedNode(node.id)
+    if (hasChildren) {
+      toggleNodeExpansion(node.id)
+    }
   }
 
   return (
@@ -115,9 +130,11 @@ export function CompositionNodeMesh({
       <mesh
         ref={meshRef}
         geometry={geometry}
+        userData={{ nodeId: node.id }}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
         onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
       >
         <meshStandardMaterial
           color={color}
