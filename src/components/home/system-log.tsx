@@ -55,7 +55,8 @@ export function SystemLog({ className = '', maxEntries = 50 }: SystemLogProps) {
     return () => {
       delete window.addSystemLog
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // addLog is stable due to useState setter
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)

@@ -27,6 +27,7 @@ export interface CompositionNode {
   casNumber?: string // Chemical Abstract Service number
   visualConfig?: VisualConfig
   children?: CompositionNode[]
+  metadata?: Record<string, unknown> // Additional type-specific data
 }
 
 export interface Source {
