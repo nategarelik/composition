@@ -1,0 +1,5 @@
+# Allow Prisma packages to run their postinstall scripts
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - prisma
