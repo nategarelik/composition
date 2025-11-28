@@ -1,5 +1,7 @@
-# Allow Prisma packages to run their postinstall scripts
+# Allow packages to run their postinstall scripts
 onlyBuiltDependencies:
   - "@prisma/client"
   - "@prisma/engines"
   - prisma
+  - sharp
+  - unrs-resolver

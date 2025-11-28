@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { nanoid } from 'nanoid'
 import type { CompositionNode, Source, ConfidenceLevel, ResearchResult, ResearchProgress } from '@/types'
+import { ANTHROPIC_MAX_TOKENS, SIZE_LIMITS } from '@/lib/constants'
 
 // Validate API key at module load time
 function createAnthropicClient(): Anthropic {
@@ -110,6 +111,11 @@ function parseResponse(message: Anthropic.Message): RawResearchResult {
     jsonStr = jsonMatch[1]
   }
 
+  // Validate response size before parsing to prevent DoS
+  if (jsonStr.length > SIZE_LIMITS.MAX_AI_RESPONSE) {
+    throw new Error(`AI response too large (${Math.round(jsonStr.length / 1000)}KB). Maximum allowed: ${SIZE_LIMITS.MAX_AI_RESPONSE / 1000}KB`)
+  }
+
   try {
     return JSON.parse(jsonStr.trim()) as RawResearchResult
   } catch {
@@ -137,7 +143,7 @@ export async function researchComposition(
   try {
     message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929', // Claude Sonnet 4.5
-      max_tokens: 8192,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
       system: SYSTEM_PROMPT,
       messages: [
         {

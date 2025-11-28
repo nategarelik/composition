@@ -8,9 +8,12 @@ const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
 
-  // Cache
-  REDIS_URL: z.string().optional(),
-  REDIS_TOKEN: z.string().optional(),
+  // Cache - Upstash Redis (supports both Vercel KV and standard Upstash env vars)
+  // These are validated as optional because redis.ts handles the fallback logic
+  KV_REST_API_URL: z.string().optional(), // Vercel KV integration
+  KV_REST_API_TOKEN: z.string().optional(),
+  UPSTASH_REDIS_REST_URL: z.string().optional(), // Standard Upstash
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
   // Vector DB
   PINECONE_API_KEY: z.string().optional(),

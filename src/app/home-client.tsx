@@ -24,7 +24,7 @@ export function HomeClient() {
         </h1>
         <nav className="flex items-center gap-4">
           <a
-            href="https://github.com/your-username/composition"
+            href="https://github.com/Nate2/Composition"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors"

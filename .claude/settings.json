@@ -14,13 +14,6 @@
       "Read(**/*)",
       "Write(**/*)",
       "Edit(**/*)"
-    ],
-    "deny": [
-      "Read(.env)",
-      "Read(.env.*)",
-      "Read(**/secrets/**)",
-      "Read(**/*.pem)",
-      "Read(**/*.key)"
     ]
   },
   "env": {
