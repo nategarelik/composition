@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import type { CompositionNode } from '@/types'
-import { CompositionNodeMesh } from './composition-node'
+import { HybridNode } from './hybrid-node'
 import { filterByDepth } from '@/lib/three/composition-utils'
 
 interface CompositionTreeProps {
@@ -11,7 +11,7 @@ interface CompositionTreeProps {
   isExploded: boolean
 }
 
-export function CompositionTree({ node, maxDepth, isExploded }: CompositionTreeProps) {
+export function CompositionTree({ node, maxDepth }: CompositionTreeProps) {
   const filteredNode = useMemo(
     () => filterByDepth(node, maxDepth),
     [node, maxDepth]
@@ -19,12 +19,11 @@ export function CompositionTree({ node, maxDepth, isExploded }: CompositionTreeP
 
   return (
     <group>
-      <CompositionNodeMesh
+      <HybridNode
         node={filteredNode}
         depth={0}
         index={0}
         siblingCount={1}
-        isExploded={isExploded}
       />
     </group>
   )

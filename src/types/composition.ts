@@ -12,7 +12,7 @@ export interface VisualConfig {
   color?: string
   texture?: string
   opacity?: number
-  shape?: 'sphere' | 'cube' | 'cylinder' | 'custom'
+  shape?: 'sphere' | 'cube' | 'cylinder' | 'custom' | 'rounded-box' | 'capsule'
 }
 
 export interface CompositionNode {
