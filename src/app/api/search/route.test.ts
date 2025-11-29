@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "./route";
+import type { Source, ResearchResult } from "@/types";
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
@@ -69,7 +70,7 @@ const mockDbRecord = {
   updatedAt: new Date(),
 };
 
-const mockResearchResult = {
+const mockResearchResult: ResearchResult = {
   name: "iPhone 15",
   category: "electronics",
   description: "Apple smartphone",
@@ -80,7 +81,7 @@ const mockResearchResult = {
     percentage: 100,
     confidence: "verified",
   },
-  sources: [],
+  sources: [] as Source[],
   confidence: "verified",
 };
 
