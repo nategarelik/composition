@@ -239,4 +239,171 @@ describe("Chat Store", () => {
       expect(useChatStore.getState().error).toBeNull();
     });
   });
+
+  describe("setLastMessageComplete", () => {
+    beforeEach(() => {
+      const store = useChatStore.getState();
+      store.initConversation(mockComposition);
+    });
+
+    it("marks streaming message as complete", () => {
+      const store = useChatStore.getState();
+      store.addMessage({ role: "assistant", content: "Test", isStreaming: true });
+      store.setLastMessageComplete();
+
+      const messages = useChatStore.getState().conversation?.messages ?? [];
+      expect(messages[0]?.isStreaming).toBe(false);
+    });
+
+    it("does nothing when no conversation exists", () => {
+      useChatStore.setState({ conversation: null });
+      const store = useChatStore.getState();
+
+      // Should not throw
+      expect(() => store.setLastMessageComplete()).not.toThrow();
+    });
+
+    it("does nothing when no messages exist", () => {
+      const store = useChatStore.getState();
+      // No messages added yet
+
+      // Should not throw
+      expect(() => store.setLastMessageComplete()).not.toThrow();
+    });
+
+    it("updates conversation in storage", () => {
+      const store = useChatStore.getState();
+      store.addMessage({ role: "assistant", content: "Test", isStreaming: true });
+      store.setLastMessageComplete();
+
+      const conversations = useChatStore.getState().conversations;
+      const storedConversation = conversations[mockComposition.id];
+      expect(storedConversation?.messages[0]?.isStreaming).toBe(false);
+    });
+  });
+
+  describe("generateSuggestions", () => {
+    it("generates general suggestions without selected node", () => {
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.length).toBeGreaterThan(0);
+      expect(suggestions.some(s => s.question.includes(mockComposition.name))).toBe(true);
+    });
+
+    it("generates node-specific suggestions for chemical nodes", () => {
+      const chemicalNode = {
+        id: "chem-1",
+        name: "Sodium Chloride",
+        type: "chemical" as const,
+        percentage: 50,
+        confidence: "verified" as const,
+      };
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition, chemicalNode);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.some(s => s.question.includes("safe for human consumption"))).toBe(true);
+      expect(suggestions.some(s => s.question.includes("properties"))).toBe(true);
+    });
+
+    it("generates node-specific suggestions for element nodes", () => {
+      const elementNode = {
+        id: "elem-1",
+        name: "Carbon",
+        type: "element" as const,
+        percentage: 25,
+        confidence: "verified" as const,
+        symbol: "C",
+        atomicNumber: 6,
+      };
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition, elementNode);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.some(s => s.question.includes("Why is Carbon used"))).toBe(true);
+    });
+
+    it("generates node-specific suggestions for component nodes", () => {
+      const componentNode = {
+        id: "comp-1",
+        name: "Battery",
+        type: "component" as const,
+        percentage: 30,
+        confidence: "estimated" as const,
+      };
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition, componentNode);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.some(s => s.question.includes("manufactured"))).toBe(true);
+    });
+
+    it("always asks what selected node is made of", () => {
+      const node = {
+        id: "node-1",
+        name: "Test Node",
+        type: "material" as const,
+        percentage: 20,
+        confidence: "verified" as const,
+      };
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition, node);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.some(s => s.question.includes("made of"))).toBe(true);
+    });
+
+    it("limits suggestions to 4", () => {
+      const chemicalNode = {
+        id: "chem-1",
+        name: "Test Chemical",
+        type: "chemical" as const,
+        percentage: 50,
+        confidence: "verified" as const,
+      };
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition, chemicalNode);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.length).toBeLessThanOrEqual(4);
+    });
+
+    it("includes nodeId in node-specific suggestions", () => {
+      const node = {
+        id: "specific-node-id",
+        name: "Test",
+        type: "component" as const,
+        percentage: 10,
+        confidence: "verified" as const,
+      };
+      const store = useChatStore.getState();
+      store.generateSuggestions(mockComposition, node);
+
+      const suggestions = useChatStore.getState().suggestions;
+      expect(suggestions.some(s => s.nodeId === "specific-node-id")).toBe(true);
+    });
+  });
+
+  describe("setSuggestions", () => {
+    it("sets custom suggestions", () => {
+      const customSuggestions = [
+        { id: "s1", question: "Custom question 1" },
+        { id: "s2", question: "Custom question 2" },
+      ];
+      const store = useChatStore.getState();
+      store.setSuggestions(customSuggestions);
+
+      expect(useChatStore.getState().suggestions).toEqual(customSuggestions);
+    });
+
+    it("can clear suggestions", () => {
+      useChatStore.setState({ suggestions: [{ id: "s1", question: "Test" }] });
+      const store = useChatStore.getState();
+      store.setSuggestions([]);
+
+      expect(useChatStore.getState().suggestions).toEqual([]);
+    });
+  });
 });
