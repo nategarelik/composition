@@ -4,7 +4,10 @@ const nextConfig: NextConfig = {
   // Properly handle three.js packages
   transpilePackages: ['three', '@react-three/fiber'],
 
-  // Configure webpack to handle canvas
+  // Enable Turbopack (default in Next.js 16)
+  turbopack: {},
+
+  // Configure webpack to handle canvas (fallback for non-turbo builds)
   webpack: (config) => {
     config.externals = [...(config.externals || []), { canvas: 'canvas' }]
     return config
