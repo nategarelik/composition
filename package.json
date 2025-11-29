@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "cross-env NODE_ENV=production next build",
+    "build": "cross-env NODE_ENV=production next build --webpack",
     "start": "next start",
     "lint": "eslint src/",
     "type-check": "tsc --noEmit",

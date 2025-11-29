@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { CompositionNode, Source, ConfidenceLevel } from "@/types";
-import type { CompositionModel as DbComposition } from ".prisma/client/models";
+import type { Composition as DbComposition } from "@prisma/client";
 
 // Zod schema for CompositionNode - recursive type for tree structure
 export const compositionNodeSchema: z.ZodType<CompositionNode> = z.lazy(() =>

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { CompositionViewerClient } from "./composition-viewer";
-import type { CompositionModel as DbComposition } from ".prisma/client/models";
+import type { Composition as DbComposition } from "@prisma/client";
 import type { Composition, CompositionNode, Source } from "@/types";
 
 // Force dynamic rendering to avoid SSG issues
