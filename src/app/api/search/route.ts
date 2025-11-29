@@ -7,6 +7,7 @@ import { getCached, setCache, cacheKeys } from "@/lib/redis";
 import { CACHE_TTL, SIZE_LIMITS } from "@/lib/constants";
 import { dbToComposition, normalizeQuery } from "@/lib/validators";
 import type { ApiResponse, SearchResponse } from "@/types";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Zod schema for request validation
 const searchRequestSchema = z.object({
@@ -27,6 +28,10 @@ export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ApiResponse<SearchResponse>>> {
   try {
+    // Check rate limit
+    const rateLimitResponse = await checkRateLimit<ApiResponse<SearchResponse>>(request, "search");
+    if (rateLimitResponse) return rateLimitResponse;
+
     // Parse and validate request body
     const body = await request.json();
     const parseResult = searchRequestSchema.safeParse(body);

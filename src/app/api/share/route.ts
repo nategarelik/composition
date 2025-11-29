@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import type { ApiResponse, ShareResponse } from "@/types";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Zod schema for request validation
 const shareRequestSchema = z.object({
@@ -15,6 +16,10 @@ export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ApiResponse<ShareResponse>>> {
   try {
+    // Check rate limit
+    const rateLimitResponse = await checkRateLimit<ApiResponse<ShareResponse>>(request, "share");
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await request.json();
     const parseResult = shareRequestSchema.safeParse(body);
 

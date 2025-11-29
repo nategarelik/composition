@@ -112,18 +112,18 @@ describe("Chat Store", () => {
       const store = useChatStore.getState();
       store.addMessage({ role: "user", content: "Hello" });
 
-      const messages = useChatStore.getState().conversation?.messages;
+      const messages = useChatStore.getState().conversation?.messages ?? [];
       expect(messages).toHaveLength(1);
-      expect(messages?.[0].role).toBe("user");
-      expect(messages?.[0].content).toBe("Hello");
+      expect(messages[0]?.role).toBe("user");
+      expect(messages[0]?.content).toBe("Hello");
     });
 
     it("adds assistant message", () => {
       const store = useChatStore.getState();
       store.addMessage({ role: "assistant", content: "Hi there!" });
 
-      const messages = useChatStore.getState().conversation?.messages;
-      expect(messages?.[0].role).toBe("assistant");
+      const messages = useChatStore.getState().conversation?.messages ?? [];
+      expect(messages[0]?.role).toBe("assistant");
     });
 
     it("generates unique IDs", () => {
@@ -131,8 +131,8 @@ describe("Chat Store", () => {
       store.addMessage({ role: "user", content: "First" });
       store.addMessage({ role: "user", content: "Second" });
 
-      const messages = useChatStore.getState().conversation?.messages;
-      expect(messages?.[0].id).not.toBe(messages?.[1].id);
+      const messages = useChatStore.getState().conversation?.messages ?? [];
+      expect(messages[0]?.id).not.toBe(messages[1]?.id);
     });
 
     it("sets timestamp", () => {
@@ -155,16 +155,16 @@ describe("Chat Store", () => {
       const store = useChatStore.getState();
       store.updateLastMessage("Updated content");
 
-      const messages = useChatStore.getState().conversation?.messages;
-      expect(messages?.[0].content).toBe("Updated content");
+      const messages = useChatStore.getState().conversation?.messages ?? [];
+      expect(messages[0]?.content).toBe("Updated content");
     });
 
     it("can set streaming flag", () => {
       const store = useChatStore.getState();
       store.updateLastMessage("Streaming...", true);
 
-      const messages = useChatStore.getState().conversation?.messages;
-      expect(messages?.[0].isStreaming).toBe(true);
+      const messages = useChatStore.getState().conversation?.messages ?? [];
+      expect(messages[0]?.isStreaming).toBe(true);
     });
   });
 
@@ -179,8 +179,8 @@ describe("Chat Store", () => {
       const store = useChatStore.getState();
       store.appendToLastMessage(" world");
 
-      const messages = useChatStore.getState().conversation?.messages;
-      expect(messages?.[0].content).toBe("Hello world");
+      const messages = useChatStore.getState().conversation?.messages ?? [];
+      expect(messages[0]?.content).toBe("Hello world");
     });
   });
 

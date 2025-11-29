@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import type { CompositionNode, Composition } from "@/types";
 
+import { checkRateLimit } from "@/lib/rate-limit";
 // ============================================
 // Types
 // ============================================
@@ -125,6 +126,10 @@ function createAnthropicClient(): Anthropic {
 
 export async function POST(request: NextRequest): Promise<Response> {
   try {
+    // Check rate limit
+    const rateLimitResponse = await checkRateLimit(request, "chat");
+    if (rateLimitResponse) return rateLimitResponse;
+
     // Parse and validate request body
     const body = await request.json();
     const parseResult = chatRequestSchema.safeParse(body);
