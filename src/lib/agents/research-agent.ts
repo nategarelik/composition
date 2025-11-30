@@ -9,8 +9,14 @@ import type {
 } from "@/types";
 import { ANTHROPIC_MAX_TOKENS, SIZE_LIMITS } from "@/lib/constants";
 
-// Validate API key at module load time
-function createAnthropicClient(): Anthropic {
+// Lazily create Anthropic client to avoid module-load-time errors
+let _anthropicClient: Anthropic | null = null;
+
+function getAnthropicClient(): Anthropic {
+  if (_anthropicClient) {
+    return _anthropicClient;
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -18,11 +24,10 @@ function createAnthropicClient(): Anthropic {
         "Please set it in your .env.local file or deployment environment.",
     );
   }
-  return new Anthropic({ apiKey });
-}
 
-// Create client - will throw early if API key is missing
-const anthropic = createAnthropicClient();
+  _anthropicClient = new Anthropic({ apiKey });
+  return _anthropicClient;
+}
 
 const SYSTEM_PROMPT = `You are an expert research agent specializing in discovering what things are made of. Your task is to break down any product, substance, or entity into its constituent parts in a hierarchical structure.
 
@@ -149,6 +154,7 @@ export async function researchComposition(
 
   let message: Anthropic.Message;
   try {
+    const anthropic = getAnthropicClient();
     message = await anthropic.messages.create({
       model: "claude-sonnet-4-5-20250929", // Claude Sonnet 4.5
       max_tokens: ANTHROPIC_MAX_TOKENS,
