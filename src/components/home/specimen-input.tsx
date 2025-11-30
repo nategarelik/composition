@@ -30,16 +30,16 @@ export function SpecimenInput({
         body: JSON.stringify({ query: query.trim() }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      const data = await response.json();
+      if (response.ok && data.success && data.data?.composition?.id) {
         // Navigate to the composition view
-        router.push(`/composition/${data.id}`);
+        router.push(`/composition/${data.data.composition.id}`);
         if (onAnalyze) {
           onAnalyze(query.trim());
         }
       } else {
         // Handle error
-        console.error("Analysis failed");
+        console.error("Analysis failed:", data.error?.message || "Unknown error");
         setIsSubmitting(false);
       }
     } catch (error) {

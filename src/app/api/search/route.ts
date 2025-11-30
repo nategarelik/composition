@@ -9,6 +9,17 @@ import { dbToComposition, normalizeQuery } from "@/lib/validators";
 import type { ApiResponse, SearchResponse } from "@/types";
 import { checkRateLimit } from "@/lib/rate-limit";
 
+// Handle preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 // Zod schema for request validation
 const searchRequestSchema = z.object({
   query: z

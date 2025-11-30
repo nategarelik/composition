@@ -33,9 +33,9 @@ export function QuickSpecimens({ className = "" }: QuickSpecimensProps) {
         body: JSON.stringify({ query: name }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        router.push(`/composition/${data.id}`);
+      const data = await response.json();
+      if (response.ok && data.success && data.data?.composition?.id) {
+        router.push(`/composition/${data.data.composition.id}`);
       }
     } catch (error) {
       console.error("Error analyzing specimen:", error);

@@ -17,15 +17,24 @@ interface SystemLogProps {
 }
 
 export function SystemLog({ className = "", maxEntries = 50 }: SystemLogProps) {
-  const [logs, setLogs] = useState<LogEntry[]>([
-    {
-      id: "1",
-      timestamp: new Date().toISOString(),
-      message: "System initialized",
-      level: "success",
-    },
-  ]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
+
+  // Add initial log entry only on client to avoid hydration mismatch
+  useEffect(() => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      setLogs([
+        {
+          id: "1",
+          timestamp: new Date().toISOString(),
+          message: "System initialized",
+          level: "success",
+        },
+      ]);
+    }
+  }, []);
 
   // Auto-scroll to bottom when new logs are added
   useEffect(() => {
