@@ -54,7 +54,7 @@ export async function POST(
       );
     }
 
-    const db = getDb();
+    const db = await getDb();
     if (!db) {
       return NextResponse.json(
         {

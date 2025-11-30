@@ -24,7 +24,7 @@ export async function GET() {
     }
 
     // Check DB connection and get composition count
-    const db = getDb();
+    const db = await getDb();
     if (db) {
       try {
         dbCompositions = await db.composition.count();

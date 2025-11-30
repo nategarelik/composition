@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { CompositionViewerClient } from "./composition-viewer";
 import type { Composition as DbComposition } from "@prisma/client";
 import type { Composition, CompositionNode, Source } from "@/types";
@@ -32,6 +32,11 @@ export default async function CompositionPage({
 }: CompositionPageProps) {
   const { id } = await params;
 
+  const db = await getDb();
+  if (!db) {
+    notFound();
+  }
+
   const record = await db.composition.findUnique({
     where: { id },
   });
@@ -47,6 +52,11 @@ export default async function CompositionPage({
 
 export async function generateMetadata({ params }: CompositionPageProps) {
   const { id } = await params;
+  const db = await getDb();
+  if (!db) {
+    return { title: "Composition Not Found" };
+  }
+
   const record = await db.composition.findUnique({
     where: { id },
     select: { name: true, description: true },

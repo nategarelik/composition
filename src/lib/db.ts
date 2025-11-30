@@ -1,26 +1,38 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import { neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
 
-// Configure WebSocket for Node.js environment
-neonConfig.webSocketConstructor = ws;
+// Cache for the Prisma client promise
+let prismaPromise: Promise<PrismaClient> | null = null;
+let prismaClient: PrismaClient | null = null;
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-  prismaError: Error | undefined;
-};
+/**
+ * Check if database is configured (without throwing)
+ */
+export function isDatabaseConfigured(): boolean {
+  return !!process.env.DATABASE_URL;
+}
 
 /**
  * Lazily creates the Prisma client when first accessed.
- * This prevents module-load-time errors when DATABASE_URL is not set.
+ * Uses dynamic imports to avoid module-load-time errors.
  * Uses Neon serverless driver for Vercel compatibility.
  */
-function createPrismaClient(): PrismaClient {
+async function createPrismaClientAsync(): Promise<PrismaClient> {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  // Dynamic imports to avoid module-load-time issues
+  const { PrismaNeon } = await import("@prisma/adapter-neon");
+  const { neonConfig } = await import("@neondatabase/serverless");
+
+  // Use native WebSocket if available (edge), otherwise use ws package (Node.js)
+  if (typeof globalThis.WebSocket !== "undefined") {
+    neonConfig.webSocketConstructor = globalThis.WebSocket;
+  } else {
+    const ws = await import("ws");
+    neonConfig.webSocketConstructor = ws.default;
   }
 
   const adapter = new PrismaNeon({ connectionString });
@@ -35,50 +47,31 @@ function createPrismaClient(): PrismaClient {
 }
 
 /**
- * Check if database is configured (without throwing)
- */
-export function isDatabaseConfigured(): boolean {
-  return !!process.env.DATABASE_URL;
-}
-
-/**
- * Get the database client.
+ * Get the database client asynchronously.
  * Returns null if DATABASE_URL is not configured.
  * Throws on actual connection errors.
  */
-export function getDb(): PrismaClient | null {
+export async function getDb(): Promise<PrismaClient | null> {
   if (!isDatabaseConfigured()) {
     return null;
   }
 
-  if (globalForPrisma.prisma) {
-    return globalForPrisma.prisma;
+  // Return cached client if available
+  if (prismaClient) {
+    return prismaClient;
+  }
+
+  // Create or return existing promise
+  if (!prismaPromise) {
+    prismaPromise = createPrismaClientAsync();
   }
 
   try {
-    const client = createPrismaClient();
-    if (process.env.NODE_ENV !== "production") {
-      globalForPrisma.prisma = client;
-    }
-    return client;
+    prismaClient = await prismaPromise;
+    return prismaClient;
   } catch (error) {
     console.error("Failed to create Prisma client:", error);
+    prismaPromise = null; // Reset on error so it can be retried
     throw error;
   }
 }
-
-/**
- * Lazy proxy for backward compatibility.
- * Throws when accessed if DATABASE_URL is not set.
- */
-export const db = new Proxy({} as PrismaClient, {
-  get(_, prop) {
-    const client = getDb();
-    if (!client) {
-      throw new Error(
-        "Database is not configured. Set DATABASE_URL environment variable."
-      );
-    }
-    return client[prop as keyof PrismaClient];
-  },
-});

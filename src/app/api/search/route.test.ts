@@ -2,15 +2,24 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "./route";
 import type { Source, ResearchResult } from "@/types";
+import type { PrismaClient } from "@prisma/client";
+
+// Mock database composition methods - keep references for assertions
+const mockCompositionFindFirst = vi.fn();
+const mockCompositionCreate = vi.fn();
+
+// Mock database client
+const mockDbClient = {
+  composition: {
+    findFirst: mockCompositionFindFirst,
+    create: mockCompositionCreate,
+  },
+} as unknown as PrismaClient;
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
-  db: {
-    composition: {
-      findFirst: vi.fn(),
-      create: vi.fn(),
-    },
-  },
+  getDb: vi.fn().mockResolvedValue(mockDbClient),
+  isDatabaseConfigured: vi.fn().mockReturnValue(true),
 }));
 
 vi.mock("@/lib/redis", () => ({
@@ -30,7 +39,7 @@ vi.mock("@/lib/agents", () => ({
 }));
 
 // Import mocked modules
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { getCached, setCache } from "@/lib/redis";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { researchComposition } from "@/lib/agents";
@@ -92,7 +101,8 @@ describe("/api/search", () => {
     vi.mocked(getCached).mockResolvedValue(null);
     vi.mocked(setCache).mockResolvedValue(undefined);
     vi.mocked(checkRateLimit).mockResolvedValue(null);
-    vi.mocked(db.composition.findFirst).mockResolvedValue(null);
+    vi.mocked(getDb).mockResolvedValue(mockDbClient);
+    vi.mocked(mockCompositionFindFirst).mockResolvedValue(null);
   });
 
   describe("Input validation", () => {
@@ -127,7 +137,7 @@ describe("/api/search", () => {
     });
 
     it("sanitizes dangerous characters from query", async () => {
-      vi.mocked(db.composition.findFirst).mockResolvedValue(mockDbRecord);
+      vi.mocked(mockCompositionFindFirst).mockResolvedValue(mockDbRecord);
 
       const request = createRequest({ query: "<script>alert('xss')</script>test" });
       const response = await POST(request);
@@ -139,7 +149,7 @@ describe("/api/search", () => {
     });
 
     it("trims whitespace from query", async () => {
-      vi.mocked(db.composition.findFirst).mockResolvedValue(mockDbRecord);
+      vi.mocked(mockCompositionFindFirst).mockResolvedValue(mockDbRecord);
 
       const request = createRequest({ query: "  iphone 15  " });
       const response = await POST(request);
@@ -202,12 +212,12 @@ describe("/api/search", () => {
       expect(data.data.cached).toBe(true);
       expect(data.data.composition.id).toBe("cached-123");
       // Should not hit database
-      expect(db.composition.findFirst).not.toHaveBeenCalled();
+      expect(mockCompositionFindFirst).not.toHaveBeenCalled();
     });
 
     it("returns cached result from database when not in Redis", async () => {
       vi.mocked(getCached).mockResolvedValue(null);
-      vi.mocked(db.composition.findFirst).mockResolvedValue(mockDbRecord);
+      vi.mocked(mockCompositionFindFirst).mockResolvedValue(mockDbRecord);
 
       const request = createRequest({ query: "iphone 15" });
       const response = await POST(request);
@@ -224,9 +234,9 @@ describe("/api/search", () => {
   describe("Research flow", () => {
     it("performs research when not cached", async () => {
       vi.mocked(getCached).mockResolvedValue(null);
-      vi.mocked(db.composition.findFirst).mockResolvedValue(null);
+      vi.mocked(mockCompositionFindFirst).mockResolvedValue(null);
       vi.mocked(researchComposition).mockResolvedValue(mockResearchResult);
-      vi.mocked(db.composition.create).mockResolvedValue(mockDbRecord);
+      vi.mocked(mockCompositionCreate).mockResolvedValue(mockDbRecord);
 
       const request = createRequest({ query: "new product" });
       const response = await POST(request);
@@ -237,14 +247,14 @@ describe("/api/search", () => {
       expect(data.data.cached).toBe(false);
       expect(data.data.researchTime).toBeDefined();
       expect(researchComposition).toHaveBeenCalledWith("new product");
-      expect(db.composition.create).toHaveBeenCalled();
+      expect(mockCompositionCreate).toHaveBeenCalled();
     });
 
     it("caches research result to Redis", async () => {
       vi.mocked(getCached).mockResolvedValue(null);
-      vi.mocked(db.composition.findFirst).mockResolvedValue(null);
+      vi.mocked(mockCompositionFindFirst).mockResolvedValue(null);
       vi.mocked(researchComposition).mockResolvedValue(mockResearchResult);
-      vi.mocked(db.composition.create).mockResolvedValue(mockDbRecord);
+      vi.mocked(mockCompositionCreate).mockResolvedValue(mockDbRecord);
 
       const request = createRequest({ query: "new product" });
       await POST(request);
@@ -256,7 +266,7 @@ describe("/api/search", () => {
   describe("Error handling", () => {
     it("returns 500 on research error", async () => {
       vi.mocked(getCached).mockResolvedValue(null);
-      vi.mocked(db.composition.findFirst).mockResolvedValue(null);
+      vi.mocked(mockCompositionFindFirst).mockResolvedValue(null);
       vi.mocked(researchComposition).mockRejectedValue(new Error("API error"));
 
       const request = createRequest({ query: "test query" });
@@ -271,7 +281,7 @@ describe("/api/search", () => {
 
     it("returns 500 on database error", async () => {
       vi.mocked(getCached).mockResolvedValue(null);
-      vi.mocked(db.composition.findFirst).mockRejectedValue(new Error("DB connection failed"));
+      vi.mocked(mockCompositionFindFirst).mockRejectedValue(new Error("DB connection failed"));
 
       const request = createRequest({ query: "test query" });
       const response = await POST(request);
@@ -284,7 +294,7 @@ describe("/api/search", () => {
 
     it("handles non-Error exceptions", async () => {
       vi.mocked(getCached).mockResolvedValue(null);
-      vi.mocked(db.composition.findFirst).mockRejectedValue("string error");
+      vi.mocked(mockCompositionFindFirst).mockRejectedValue("string error");
 
       const request = createRequest({ query: "test query" });
       const response = await POST(request);

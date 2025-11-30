@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 // Force dynamic rendering to avoid SSG issues
 export const dynamic = "force-dynamic";
@@ -10,6 +10,11 @@ interface SharePageProps {
 
 export default async function SharePage({ params }: SharePageProps) {
   const { code } = await params;
+
+  const db = await getDb();
+  if (!db) {
+    notFound();
+  }
 
   const share = await db.share.findUnique({
     where: { shortCode: code },
@@ -33,6 +38,11 @@ export default async function SharePage({ params }: SharePageProps) {
 
 export async function generateMetadata({ params }: SharePageProps) {
   const { code } = await params;
+
+  const db = await getDb();
+  if (!db) {
+    return { title: "Share Not Found" };
+  }
 
   const share = await db.share.findUnique({
     where: { shortCode: code },

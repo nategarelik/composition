@@ -37,7 +37,7 @@ export async function GET(
       );
     }
 
-    const db = getDb();
+    const db = await getDb();
     if (!db) {
       return NextResponse.json(
         {

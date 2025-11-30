@@ -24,7 +24,7 @@ function countNodes(node: unknown): number {
 
 export async function GET() {
   try {
-    const db = getDb();
+    const db = await getDb();
     if (!db) {
       // Return empty list if DB not configured
       return NextResponse.json({
