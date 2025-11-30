@@ -53,3 +53,4 @@ secrets/
 
 # Windows NUL device workaround (created accidentally)
 nul
+src/generated/

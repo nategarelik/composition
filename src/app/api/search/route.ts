@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { researchComposition } from "@/lib/agents";
-import { db } from "@/lib/db";
+import { getDb, isDatabaseConfigured } from "@/lib/db";
 import { getCached, setCache, cacheKeys } from "@/lib/redis";
 import { CACHE_TTL, SIZE_LIMITS } from "@/lib/constants";
 import { dbToComposition, normalizeQuery } from "@/lib/validators";
@@ -39,8 +39,40 @@ export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ApiResponse<SearchResponse>>> {
   try {
+    // Check if database is configured
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message:
+              "Database is not configured. Please set DATABASE_URL environment variable.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
+    const db = getDb();
+    if (!db) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "Database connection failed.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
     // Check rate limit
-    const rateLimitResponse = await checkRateLimit<ApiResponse<SearchResponse>>(request, "search");
+    const rateLimitResponse = await checkRateLimit<ApiResponse<SearchResponse>>(
+      request,
+      "search",
+    );
     if (rateLimitResponse) return rateLimitResponse;
 
     // Parse and validate request body

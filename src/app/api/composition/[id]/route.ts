@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getDb, isDatabaseConfigured } from "@/lib/db";
 import { getCached, setCache, cacheKeys } from "@/lib/redis";
 import { CACHE_TTL } from "@/lib/constants";
 import { dbToComposition } from "@/lib/validators";
@@ -12,7 +12,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // Check cache
+    // Check cache first (works even without DB)
     const cached = await getCached<ReturnType<typeof dbToComposition>>(
       cacheKeys.compositionById(id),
     );
@@ -21,6 +21,34 @@ export async function GET(
         success: true,
         data: { composition: cached },
       });
+    }
+
+    // Check if database is configured
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "Database is not configured.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
+    const db = getDb();
+    if (!db) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "Database connection failed.",
+          },
+        },
+        { status: 503 },
+      );
     }
 
     // Fetch from database

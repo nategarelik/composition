@@ -4,8 +4,13 @@ import { Pool } from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaError: Error | undefined;
 };
 
+/**
+ * Lazily creates the Prisma client when first accessed.
+ * This prevents module-load-time errors when DATABASE_URL is not set.
+ */
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
@@ -25,6 +30,51 @@ function createPrismaClient(): PrismaClient {
   });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+/**
+ * Check if database is configured (without throwing)
+ */
+export function isDatabaseConfigured(): boolean {
+  return !!process.env.DATABASE_URL;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+/**
+ * Get the database client.
+ * Returns null if DATABASE_URL is not configured.
+ * Throws on actual connection errors.
+ */
+export function getDb(): PrismaClient | null {
+  if (!isDatabaseConfigured()) {
+    return null;
+  }
+
+  if (globalForPrisma.prisma) {
+    return globalForPrisma.prisma;
+  }
+
+  try {
+    const client = createPrismaClient();
+    if (process.env.NODE_ENV !== "production") {
+      globalForPrisma.prisma = client;
+    }
+    return client;
+  } catch (error) {
+    console.error("Failed to create Prisma client:", error);
+    throw error;
+  }
+}
+
+/**
+ * Lazy proxy for backward compatibility.
+ * Throws when accessed if DATABASE_URL is not set.
+ */
+export const db = new Proxy({} as PrismaClient, {
+  get(_, prop) {
+    const client = getDb();
+    if (!client) {
+      throw new Error(
+        "Database is not configured. Set DATABASE_URL environment variable."
+      );
+    }
+    return client[prop as keyof PrismaClient];
+  },
+});

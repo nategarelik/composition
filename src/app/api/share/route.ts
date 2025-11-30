@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { getDb, isDatabaseConfigured } from "@/lib/db";
 import type { ApiResponse, ShareResponse } from "@/types";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -16,8 +16,39 @@ export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<ApiResponse<ShareResponse>>> {
   try {
+    // Check if database is configured
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "Database is not configured.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
+    const db = getDb();
+    if (!db) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "Database connection failed.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
     // Check rate limit
-    const rateLimitResponse = await checkRateLimit<ApiResponse<ShareResponse>>(request, "share");
+    const rateLimitResponse = await checkRateLimit<ApiResponse<ShareResponse>>(
+      request,
+      "share",
+    );
     if (rateLimitResponse) return rateLimitResponse;
 
     const body = await request.json();

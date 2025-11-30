@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +24,14 @@ export async function GET() {
     }
 
     // Check DB connection and get composition count
-    try {
-      dbCompositions = await db.composition.count();
-      dbConnected = true;
-    } catch (error) {
-      console.error("DB stats error:", error);
+    const db = getDb();
+    if (db) {
+      try {
+        dbCompositions = await db.composition.count();
+        dbConnected = true;
+      } catch (error) {
+        console.error("DB stats error:", error);
+      }
     }
 
     return NextResponse.json({

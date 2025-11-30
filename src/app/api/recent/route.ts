@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,15 @@ function countNodes(node: unknown): number {
 
 export async function GET() {
   try {
+    const db = getDb();
+    if (!db) {
+      // Return empty list if DB not configured
+      return NextResponse.json({
+        success: true,
+        compositions: [],
+      });
+    }
+
     const compositions = await db.composition.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
