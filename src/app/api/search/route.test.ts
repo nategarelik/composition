@@ -4,17 +4,18 @@ import { POST } from "./route";
 import type { Source, ResearchResult } from "@/types";
 import type { PrismaClient } from "@prisma/client";
 
-// Mock database composition methods - keep references for assertions
-const mockCompositionFindFirst = vi.fn();
-const mockCompositionCreate = vi.fn();
-
-// Mock database client
-const mockDbClient = {
-  composition: {
-    findFirst: mockCompositionFindFirst,
-    create: mockCompositionCreate,
-  },
-} as unknown as PrismaClient;
+// Use vi.hoisted to ensure mocks are available before vi.mock runs
+const { mockCompositionFindFirst, mockCompositionCreate, mockDbClient } = vi.hoisted(() => {
+  const mockCompositionFindFirst = vi.fn();
+  const mockCompositionCreate = vi.fn();
+  const mockDbClient = {
+    composition: {
+      findFirst: mockCompositionFindFirst,
+      create: mockCompositionCreate,
+    },
+  } as unknown as PrismaClient;
+  return { mockCompositionFindFirst, mockCompositionCreate, mockDbClient };
+});
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
