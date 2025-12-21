@@ -1,19 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/providers";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-  display: "swap",
-});
+// Use CSS custom properties for fonts - set in globals.css
+// This avoids network requests during build while providing consistent font styling
 
 export const metadata: Metadata = {
   title: "Composition - Deconstruct Anything",
@@ -43,9 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
-      >
+      <body className="font-sans antialiased">
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
