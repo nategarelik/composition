@@ -17,6 +17,10 @@ interface CompositionState {
   treeExpandedNodes: Set<string>; // Nodes expanded in tree UI
   focusedNodeId: string | null; // Camera focus target
 
+  // New 2D canvas state (UI redesign)
+  expandedPaths: Set<string>; // Paths expanded in 2D radial canvas
+  selectedPath: string | null; // Currently selected path in canvas
+
   // Actions
   setComposition: (composition: Composition) => void;
   selectNode: (node: CompositionNode | null) => void;
@@ -33,6 +37,10 @@ interface CompositionState {
   setFocusedNode: (nodeId: string | null) => void; // Set camera focus target
   collapseAllTree: () => void; // Collapse all tree nodes
   expandAllTree: () => void; // Expand all tree nodes
+
+  // 2D canvas actions
+  toggleExpandedPath: (path: string) => void;
+  setSelectedPath: (path: string | null) => void;
 }
 
 // Helper to get all node IDs in a composition tree
@@ -78,6 +86,10 @@ export const useCompositionStore = create<CompositionState>((set) => ({
   treeExpandedNodes: new Set<string>(),
   focusedNodeId: null,
 
+  // 2D canvas state
+  expandedPaths: new Set<string>(['root']),
+  selectedPath: null,
+
   setComposition: (composition) =>
     set({
       composition,
@@ -89,7 +101,10 @@ export const useCompositionStore = create<CompositionState>((set) => ({
       focusedNodeId: null,
     }),
 
-  selectNode: (selectedNode) => set({ selectedNode }),
+  selectNode: (selectedNode) => set({
+    selectedNode,
+    selectedPath: selectedNode ? `node-${selectedNode.id}` : null,
+  }),
 
   setHoveredNode: (hoveredNode) => set({ hoveredNode }),
 
@@ -175,5 +190,40 @@ export const useCompositionStore = create<CompositionState>((set) => ({
       if (!state.composition) return state;
       const allIds = getAllNodeIds(state.composition.root);
       return { treeExpandedNodes: new Set(allIds) };
+    }),
+
+  // 2D canvas path actions
+  toggleExpandedPath: (path) =>
+    set((state) => {
+      const newPaths = new Set(state.expandedPaths);
+      if (newPaths.has(path)) {
+        newPaths.delete(path);
+      } else {
+        newPaths.add(path);
+      }
+      return { expandedPaths: newPaths };
+    }),
+
+  setSelectedPath: (selectedPath) =>
+    set((state) => {
+      // Extract node ID from path (e.g., "node-123" -> "123")
+      if (!selectedPath) return { selectedPath: null, selectedNode: null };
+
+      const nodeId = selectedPath.replace('node-', '');
+
+      // Find the node in the composition tree
+      const findNode = (node: CompositionNode, targetId: string): CompositionNode | null => {
+        if (node.id === targetId) return node;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findNode(child, targetId);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const selectedNode = state.composition ? findNode(state.composition.root, nodeId) : null;
+      return { selectedPath, selectedNode };
     }),
 }));

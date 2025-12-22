@@ -1,6 +1,70 @@
 @import "tailwindcss";
 
 /* ============================================
+   INSTITUTIONAL THEME CSS VARIABLES
+   ============================================ */
+
+:root, [data-theme="cern"] {
+  --theme-bg-primary: #0a0b0d;
+  --theme-bg-secondary: #101214;
+  --theme-bg-tertiary: #1a1c1f;
+  --theme-accent-primary: #3b9eff;
+  --theme-accent-secondary: #00d4aa;
+  --theme-text-primary: #f0f2f5;
+  --theme-text-secondary: #9ca3af;
+  --theme-text-mono: #00ff88;
+  --theme-border: #2a2d32;
+  --theme-confidence-verified: #22c55e;
+  --theme-confidence-estimated: #f59e0b;
+  --theme-confidence-speculative: #ef4444;
+}
+
+[data-theme="intel"] {
+  --theme-bg-primary: #0d0d0f;
+  --theme-bg-secondary: #141418;
+  --theme-bg-tertiary: #1e1e24;
+  --theme-accent-primary: #6366f1;
+  --theme-accent-secondary: #8b5cf6;
+  --theme-text-primary: #e4e4e7;
+  --theme-text-secondary: #a1a1aa;
+  --theme-text-mono: #a5f3fc;
+  --theme-border: #27272a;
+  --theme-confidence-verified: #22c55e;
+  --theme-confidence-estimated: #f59e0b;
+  --theme-confidence-speculative: #ef4444;
+}
+
+[data-theme="pharma"] {
+  --theme-bg-primary: #fafafa;
+  --theme-bg-secondary: #f4f4f5;
+  --theme-bg-tertiary: #e4e4e7;
+  --theme-accent-primary: #0891b2;
+  --theme-accent-secondary: #06b6d4;
+  --theme-text-primary: #18181b;
+  --theme-text-secondary: #52525b;
+  --theme-text-mono: #0d9488;
+  --theme-border: #d4d4d8;
+  --theme-confidence-verified: #16a34a;
+  --theme-confidence-estimated: #d97706;
+  --theme-confidence-speculative: #dc2626;
+}
+
+[data-theme="materials"] {
+  --theme-bg-primary: #09090b;
+  --theme-bg-secondary: #18181b;
+  --theme-bg-tertiary: #27272a;
+  --theme-accent-primary: #f97316;
+  --theme-accent-secondary: #fb923c;
+  --theme-text-primary: #fafafa;
+  --theme-text-secondary: #a1a1aa;
+  --theme-text-mono: #bef264;
+  --theme-border: #3f3f46;
+  --theme-confidence-verified: #22c55e;
+  --theme-confidence-estimated: #f59e0b;
+  --theme-confidence-speculative: #ef4444;
+}
+
+/* ============================================
    CLINICAL LAB TERMINAL - Design System
    ============================================ */
 
@@ -141,6 +205,14 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth theme transitions */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
 }
 
 /* ============================================

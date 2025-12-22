@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { QueryProvider } from "@/components/providers";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
 // Use CSS custom properties for fonts - set in globals.css
@@ -34,7 +35,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans antialiased">
-        <QueryProvider>{children}</QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 export { useSearchStore } from "./search-store";
 export { useCompositionStore } from "./composition-store";
 export { useChatStore } from "./chat-store";
+export { useUIStore } from "./ui-store";
 export type {
   ChatMessage,
   Conversation,
