@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
@@ -22,15 +22,44 @@ export function KeyboardShortcutsOverlay({
   showHelp = false,
 }: KeyboardShortcutsOverlayProps) {
   const [showModeIndicator, setShowModeIndicator] = useState(false);
+  const previousModeRef = useRef<GizmoMode>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Memoized timer cleanup
+  const clearModeTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
   // Show mode indicator briefly when mode changes
   useEffect(() => {
-    if (currentMode) {
-      setShowModeIndicator(true);
-      const timer = setTimeout(() => setShowModeIndicator(false), 2000);
-      return () => clearTimeout(timer);
+    // Only trigger when mode actually changes
+    if (currentMode !== previousModeRef.current) {
+      previousModeRef.current = currentMode;
+
+      // Schedule all state updates to avoid cascading renders
+      clearModeTimer();
+
+      if (currentMode) {
+        timerRef.current = setTimeout(() => {
+          setShowModeIndicator(true);
+          timerRef.current = setTimeout(
+            () => setShowModeIndicator(false),
+            2000,
+          );
+        }, 0);
+      } else {
+        // Wrap in setTimeout to avoid synchronous setState in effect
+        timerRef.current = setTimeout(() => {
+          setShowModeIndicator(false);
+        }, 0);
+      }
     }
-  }, [currentMode]);
+
+    return clearModeTimer;
+  }, [currentMode, clearModeTimer]);
 
   const modeLabels: Record<string, string> = {
     translate: "Move Mode",

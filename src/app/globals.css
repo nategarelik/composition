@@ -5,6 +5,14 @@
    ============================================ */
 
 :root {
+  /* Font Stacks - System fonts with fallbacks */
+  --font-inter:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-jetbrains:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
   /* Background Colors */
   --bg-primary: #0a0b0d;
   --bg-secondary: #101214;

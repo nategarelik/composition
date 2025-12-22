@@ -1,6 +1,11 @@
 import "dotenv/config";
 import path from "node:path";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
+
+// Use DATABASE_URL from environment, with a placeholder for builds without DB access
+const databaseUrl =
+  process.env.DATABASE_URL ||
+  "postgresql://placeholder:placeholder@localhost:5432/placeholder";
 
 export default defineConfig({
   schema: path.join(__dirname, "prisma/schema.prisma"),
@@ -8,6 +13,6 @@ export default defineConfig({
     path: path.join(__dirname, "prisma/migrations"),
   },
   datasource: {
-    url: env("DATABASE_URL"),
+    url: databaseUrl,
   },
 });
