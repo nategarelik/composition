@@ -25,8 +25,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+
       - name: Type check
-        run: pnpm tsc --noEmit
+        run: pnpm type-check
 
       - name: Lint
         run: pnpm lint
@@ -49,6 +52,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
 
       - name: Build
         run: pnpm build
