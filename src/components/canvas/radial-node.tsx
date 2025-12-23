@@ -23,7 +23,7 @@ interface RadialNodeProps {
 }
 
 export function RadialNode({ layoutNode }: RadialNodeProps) {
-  const { node, x, y, path } = layoutNode;
+  const { node, x, y, path, hasChildren, isExpanded } = layoutNode;
 
   const selectedNode = useCompositionStore((s) => s.selectedNode);
   const selectNode = useCompositionStore((s) => s.selectNode);
@@ -35,7 +35,6 @@ export function RadialNode({ layoutNode }: RadialNodeProps) {
 
   const color = NODE_COLORS[node.type] || '#888888';
   const size = NODE_SIZES[node.type] || 16;
-  const hasChildren = node.children && node.children.length > 0;
 
   const handleClick = () => {
     selectNode(node);
@@ -116,16 +115,31 @@ export function RadialNode({ layoutNode }: RadialNodeProps) {
         </text>
       )}
 
-      {/* Expand indicator */}
+      {/* Expand/collapse indicator */}
       {hasChildren && (
-        <circle
-          cx={size * 0.7}
-          cy={-size * 0.7}
-          r="6"
-          fill="var(--theme-bg-tertiary)"
-          stroke={color}
-          strokeWidth="1"
-        />
+        <g>
+          <circle
+            cx={size * 0.7}
+            cy={-size * 0.7}
+            r="8"
+            fill="var(--theme-bg-tertiary)"
+            stroke={color}
+            strokeWidth="1.5"
+          />
+          {/* Plus/minus icon */}
+          <text
+            x={size * 0.7}
+            y={-size * 0.7 + 1}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill={color}
+            fontSize="12"
+            fontWeight="bold"
+            style={{ pointerEvents: 'none' }}
+          >
+            {isExpanded ? '−' : '+'}
+          </text>
+        </g>
       )}
     </g>
   );

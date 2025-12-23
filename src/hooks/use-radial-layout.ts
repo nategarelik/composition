@@ -11,6 +11,8 @@ export interface LayoutNode {
   parentY?: number;
   depth: number;
   path: string; // Tree path for expansion tracking (e.g., 'root', 'root.children[0]')
+  hasChildren: boolean; // Whether original node has children (for expand/collapse UI)
+  isExpanded: boolean; // Whether this node's children are currently shown
 }
 
 /**
@@ -36,19 +38,30 @@ export function useRadialLayout(
     const centerY = height / 2;
     const radius = Math.min(width, height) / 2 - 100;
 
-    // Build hierarchy with only expanded nodes, tracking path
+    // Build hierarchy with only expanded nodes, tracking path and original children info
     interface NodeWithPath extends CompositionNode {
       __path?: string;
+      __hasOriginalChildren?: boolean;
+      __isExpanded?: boolean;
     }
 
     const filterChildren = (node: CompositionNode, path: string): NodeWithPath => {
-      const nodeWithPath: NodeWithPath = { ...node, __path: path };
-      if (!node.children || !expandedPaths.has(path)) {
+      const hasOriginalChildren = !!(node.children && node.children.length > 0);
+      const isExpanded = hasOriginalChildren && expandedPaths.has(path);
+
+      const nodeWithPath: NodeWithPath = {
+        ...node,
+        __path: path,
+        __hasOriginalChildren: hasOriginalChildren,
+        __isExpanded: isExpanded,
+      };
+
+      if (!hasOriginalChildren || !isExpanded) {
         return { ...nodeWithPath, children: undefined };
       }
       return {
         ...nodeWithPath,
-        children: node.children.map((child, i) =>
+        children: node.children!.map((child, i) =>
           filterChildren(child, `${path}.children[${i}]`)
         ),
       };
@@ -88,6 +101,7 @@ export function useRadialLayout(
         parentY = centerY + pR * Math.sin(pAngle - Math.PI / 2);
       }
 
+      const nodeData = d.data as NodeWithPath;
       nodes.push({
         id: d.data.id,
         node: d.data,
@@ -96,7 +110,9 @@ export function useRadialLayout(
         parentX,
         parentY,
         depth: d.depth,
-        path: (d.data as NodeWithPath).__path || 'root',
+        path: nodeData.__path || 'root',
+        hasChildren: nodeData.__hasOriginalChildren || false,
+        isExpanded: nodeData.__isExpanded || false,
       });
     });
 

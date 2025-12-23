@@ -57,7 +57,7 @@ export function NodeTooltip({ node, x, y, containerWidth, containerHeight }: Nod
         x={tooltipX}
         y={tooltipY}
         width={tooltipWidth}
-        height="auto"
+        height={tooltipHeight}
         rx="4"
         fill="var(--theme-bg-secondary)"
         stroke="var(--theme-border)"

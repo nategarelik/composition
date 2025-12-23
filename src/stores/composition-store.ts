@@ -99,6 +99,8 @@ export const useCompositionStore = create<CompositionState>((set) => ({
       expandedNodes: new Set<string>(),
       treeExpandedNodes: new Set<string>([composition.root.id]), // Auto-expand root
       focusedNodeId: null,
+      // Reset expanded paths - expand root to show first level of children
+      expandedPaths: new Set<string>(['root']),
     }),
 
   selectNode: (selectedNode) => set({
