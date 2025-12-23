@@ -15,6 +15,7 @@ export interface BlueprintCanvasRef {
 export const BlueprintCanvas = forwardRef<BlueprintCanvasRef, Record<string, never>>(
   function BlueprintCanvas(_, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
@@ -53,13 +54,22 @@ export const BlueprintCanvas = forwardRef<BlueprintCanvasRef, Record<string, nev
     return () => observer.disconnect();
   }, []);
 
-  // Zoom handler
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  // Zoom handler - use native event to support non-passive listener
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = Math.min(Math.max(transform.scale * delta, 0.1), 5);
     setCanvasTransform({ ...transform, scale: newScale });
   }, [transform, setCanvasTransform]);
+
+  // Attach wheel listener with passive: false to allow preventDefault
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    svg.addEventListener('wheel', handleWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
 
   // Pan handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -146,9 +156,9 @@ export const BlueprintCanvas = forwardRef<BlueprintCanvasRef, Record<string, nev
       style={{ backgroundColor: 'var(--theme-bg-primary)' }}
     >
       <svg
+        ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
