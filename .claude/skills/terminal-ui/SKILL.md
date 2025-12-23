@@ -1,224 +1,269 @@
 ---
-name: Clinical Lab Terminal UI
-description: Design system and patterns for the Clinical Lab Terminal aesthetic. Use when building UI components, styling elements, or implementing the terminal workstation interface.
+name: CERN Detector UI
+description: Design system for the CERN Particle Detector aesthetic. Use when building UI components, styling elements, or implementing the detector workstation interface.
 allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
-# Clinical Lab Terminal UI Design System
+# CERN Particle Detector UI Design System
 
-This skill provides the complete design system for the Composition app's "Clinical Lab Terminal" aesthetic.
+This skill provides the complete design system for the Composition app's "CERN Particle Detector" aesthetic - inspired by CERN control rooms, ATLAS/CMS detector visualizations, and particle physics instrumentation.
 
 ## When to Use This Skill
 
 - Building new UI components
 - Styling existing components
 - Implementing layout patterns
-- Creating terminal-style interfaces
+- Creating detector-style interfaces
 - Building 3D workstation controls
+
+## Design Philosophy
+
+**NOT a generic terminal.** This is a research instrument interface:
+- **Circular/radial elements** - detector cross-sections, not rectangular cards
+- **Wire chamber aesthetic** - fine grids, track visualizations
+- **Particle color language** - each color has scientific meaning
+- **Data-dense but elegant** - like real physics control software
 
 ## Color Palette
 
-### Core Colors
+### Void (Backgrounds)
 | Variable | Hex | Usage |
 |----------|-----|-------|
-| `--bg-primary` | `#0a0b0d` | Page background |
-| `--bg-secondary` | `#101214` | Panel backgrounds |
-| `--bg-tertiary` | `#181a1e` | Cards, elevated surfaces |
-| `--bg-panel` | `#0d0e10` | Tool panels |
+| `--void-deep` | `#030305` | Page background |
+| `--void-primary` | `#060609` | Main background |
+| `--void-secondary` | `#0a0a0f` | Panel backgrounds |
+| `--void-tertiary` | `#0f0f16` | Elevated surfaces |
+| `--void-elevated` | `#14141e` | Cards, modals |
 
-### Accent Colors
+### Wire Chamber
 | Variable | Hex | Usage |
 |----------|-----|-------|
-| `--accent-primary` | `#3b9eff` | Primary actions, links |
-| `--accent-secondary` | `#00d4aa` | Success, verified data |
-| `--accent-warning` | `#ffb020` | Warnings, estimated data |
-| `--accent-danger` | `#ff4757` | Errors, speculative data |
+| `--wire-dim` | `#1a1a2e` | Subtle borders, grids |
+| `--wire-medium` | `#252540` | Scrollbars, dividers |
+| `--wire-bright` | `#3d3d66` | Hover states, accents |
 
-### Text Colors
-| Variable | Hex | Usage |
-|----------|-----|-------|
-| `--text-primary` | `#f0f2f5` | Primary text |
-| `--text-secondary` | `#8b919a` | Labels, muted text |
-| `--text-mono` | `#00ff88` | Terminal output, data |
+### Particle Colors
+| Variable | Hex | Meaning |
+|----------|-----|---------|
+| `--particle-gold` | `#ffd700` | Verified, stable, heavy particles |
+| `--particle-cyan` | `#00d4ff` | Active tracking, live data, leptons |
+| `--particle-magenta` | `#ff2d7e` | Collisions, processing, bosons |
+| `--particle-green` | `#39ff14` | Element traces, hadrons |
+| `--particle-orange` | `#ff8c00` | Warnings, estimations, jets |
 
-### Layer Colors (Composition Types)
+### Node Types (Composition Hierarchy)
 | Variable | Hex | Type |
 |----------|-----|------|
-| `--layer-product` | `#ffffff` | Product nodes |
-| `--layer-component` | `#4a9eff` | Component nodes |
-| `--layer-material` | `#c4a35a` | Material nodes |
-| `--layer-chemical` | `#50fa7b` | Chemical nodes |
-| `--layer-element` | `#ff79c6` | Element nodes |
+| `--node-product` | `#ffffff` | Product nodes |
+| `--node-component` | `--particle-cyan` | Component nodes |
+| `--node-material` | `--particle-orange` | Material nodes |
+| `--node-chemical` | `--particle-green` | Chemical nodes |
+| `--node-element` | `--particle-gold` | Element nodes |
+
+### Text
+| Variable | Hex | Usage |
+|----------|-----|-------|
+| `--text-bright` | `#f0f0f8` | Headings, emphasis |
+| `--text-primary` | `#d0d0e0` | Body text |
+| `--text-secondary` | `#8080a0` | Labels, muted |
+| `--text-tertiary` | `#505070` | Disabled, hints |
+| `--text-data` | `--particle-cyan` | Data values |
+| `--text-highlight` | `--particle-gold` | Verified data |
 
 ## Typography
 
-```tsx
-// Tailwind classes
-const typography = {
-  // UI Text (Inter)
-  uiLarge: "font-sans text-lg font-medium text-text-primary",
-  uiNormal: "font-sans text-sm text-text-primary",
-  uiSmall: "font-sans text-xs text-text-secondary",
-  uiLabel: "font-sans text-xs text-text-secondary uppercase tracking-wider",
+```css
+--font-display: 'DM Sans', system-ui, sans-serif;
+--font-mono: 'Space Mono', 'Overpass Mono', monospace;
+--font-data: 'Overpass Mono', 'Space Mono', monospace;
+```
 
-  // Mono/Data (JetBrains Mono)
-  monoLarge: "font-mono text-lg text-text-mono",
-  monoNormal: "font-mono text-sm text-text-primary",
-  monoSmall: "font-mono text-xs text-text-secondary",
-  monoData: "font-mono text-xs text-text-mono tabular-nums",
-}
+### Usage Classes
+```tsx
+// Display text
+className="font-display text-lg font-semibold text-[var(--text-bright)]"
+
+// Mono labels
+className="font-mono text-xs text-[var(--text-secondary)] uppercase tracking-wider"
+
+// Data readouts
+className="font-data text-sm text-[var(--text-data)] tabular-nums"
+
+// Detector label style
+className="label-detector" // 10px, uppercase, 0.15em tracking
 ```
 
 ## Component Patterns
 
-### Panel
+### Detector Panel
 ```tsx
-function Panel({ title, icon, children }: PanelProps) {
-  return (
-    <div className="bg-bg-panel border border-border-subtle rounded-sm">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border-subtle">
-        {icon}
-        <span className="font-mono text-xs text-text-secondary uppercase tracking-wider">
-          {title}
-        </span>
-      </div>
-      <div className="p-3">{children}</div>
-    </div>
-  )
-}
+<div className="detector-panel">
+  <div className="detector-panel-header">
+    <span className="label-detector">Panel Title</span>
+  </div>
+  <div className="detector-panel-content">
+    {children}
+  </div>
+</div>
+```
+
+### Detector Input
+```tsx
+<input
+  className="detector-input"
+  placeholder="Enter value..."
+/>
+```
+
+### Detector Buttons
+```tsx
+// Standard
+<button className="btn-detector">Action</button>
+
+// Primary (cyan gradient)
+<button className="btn-detector btn-detector-primary">Analyze</button>
+
+// Gold accent
+<button className="btn-detector btn-detector-gold">Verify</button>
 ```
 
 ### Status Indicator
 ```tsx
-function StatusIndicator({ status }: { status: 'online' | 'offline' | 'processing' }) {
-  const colors = {
-    online: 'bg-accent-secondary',
-    offline: 'bg-accent-danger',
-    processing: 'bg-accent-warning',
-  }
-
-  return (
-    <span className="relative flex h-2 w-2">
-      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${colors[status]}`} />
-      <span className={`relative inline-flex h-2 w-2 rounded-full ${colors[status]}`} />
-    </span>
-  )
-}
+<div className="status-indicator status-active" />  // Cyan with pulse
+<div className="status-indicator status-verified" /> // Gold
+<div className="status-indicator status-warning" />  // Orange
+<div className="status-indicator status-error" />    // Magenta
 ```
 
-### Terminal Input
+### Specimen Tag
 ```tsx
-function TerminalInput({ placeholder, value, onChange }: InputProps) {
-  return (
-    <div className="flex items-center gap-2 bg-bg-tertiary border border-border-subtle rounded px-3 py-2">
-      <span className="text-accent-secondary font-mono">{">"}</span>
-      <input
-        className="flex-1 bg-transparent text-text-primary font-mono outline-none placeholder:text-text-secondary"
-        placeholder={placeholder || "_"}
-        value={value}
-        onChange={onChange}
-      />
-    </div>
-  )
-}
+<button className="specimen-tag">iPhone 15 Pro</button>
+```
+Has automatic cyan dot before text, hover glow effect.
+
+### Readout Display
+```tsx
+<div className="flex flex-col gap-1">
+  <span className="label-detector">Label</span>
+  <div className="font-data text-lg tabular-nums">
+    <span className="particle-cyan">42.5</span>
+    <span className="text-[var(--text-tertiary)] text-sm ml-1">units</span>
+  </div>
+</div>
 ```
 
-### Menu Bar
+### Wire Frame Container
 ```tsx
-function MenuBar({ items }: { items: string[] }) {
-  return (
-    <div className="flex items-center gap-0 bg-bg-primary border-b border-border-subtle">
-      {items.map(item => (
-        <button
-          key={item}
-          className="px-3 py-1.5 text-xs text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
-        >
-          {item}
-        </button>
-      ))}
-    </div>
-  )
-}
-```
-
-### Tool Button
-```tsx
-function ToolButton({ icon, label, shortcut, active }: ToolButtonProps) {
-  return (
-    <button
-      className={cn(
-        "flex items-center justify-center w-8 h-8 rounded",
-        "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary",
-        "transition-colors group relative",
-        active && "bg-accent-primary/20 text-accent-primary"
-      )}
-      title={`${label} (${shortcut})`}
-    >
-      <span className="text-lg">{icon}</span>
-    </button>
-  )
-}
-```
-
-### Data Readout
-```tsx
-function DataReadout({ label, value, unit }: ReadoutProps) {
-  return (
-    <div className="flex justify-between items-center py-1 border-b border-border-subtle/50 last:border-0">
-      <span className="font-mono text-xs text-text-secondary">{label}</span>
-      <span className="font-mono text-xs text-text-mono tabular-nums">
-        {value}{unit && <span className="text-text-secondary ml-1">{unit}</span>}
-      </span>
-    </div>
-  )
-}
+<div className="wire-frame p-4">
+  {/* Has corner brackets automatically */}
+  {children}
+</div>
 ```
 
 ## Layout Patterns
 
+### Detector Background
+```tsx
+<div className="detector-bg min-h-screen">
+  {/* Radial rings + grid pattern + center glow */}
+</div>
+```
+
 ### App Shell
 ```
-┌────────────────────────────────────────────────────────┐
-│ MENU BAR                                               │
-├───────┬────────────────────────────────────┬───────────┤
-│TOOLBAR│         MAIN CONTENT               │PROPERTIES │
-│       │                                    │           │
-│  [◇]  │                                    │  PANEL    │
-│  [↔]  │                                    │           │
-│  [⟳]  │                                    │           │
-├───────┴────────────────────────────────────┴───────────┤
-│ BOTTOM PANEL (Tabs: Hierarchy | Chat)                  │
-└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│ ◉ STATUS │ TITLE                              │ SESSION    │
+├──────────┼────────────────────────────────────┼────────────┤
+│ SIDEBAR  │         MAIN CONTENT               │ READOUTS   │
+│          │                                    │            │
+│          │                                    │            │
+├──────────┴────────────────────────────────────┴────────────┤
+│ BOTTOM PANEL (Tabs: Hierarchy | Chat)                      │
+└────────────────────────────────────────────────────────────┘
 ```
 
-### Responsive Breakpoints
-- Desktop: Full 3-column layout (toolbar + main + properties)
-- Tablet: 2-column (main + collapsible side panels)
-- Mobile: Single column with bottom sheet navigation
+### Corner Brackets (Decorative)
+```tsx
+<div className="fixed top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[var(--wire-dim)]" />
+<div className="fixed top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-[var(--wire-dim)]" />
+<div className="fixed bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[var(--wire-dim)]" />
+<div className="fixed bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[var(--wire-dim)]" />
+```
 
-## Animation Guidelines
+## Animation Classes
 
-### Transitions
 ```css
-/* Default transition */
-transition: all 150ms ease-out;
+.animate-pulse-ring      /* Expanding ring for status indicators */
+.animate-detector-scan   /* 360° rotation for scanning effects */
+.animate-data-stream     /* Horizontal data flow */
+.animate-glow-pulse      /* Opacity pulse for active elements */
+.animate-fade-in         /* 300ms fade in */
+.animate-slide-up        /* 300ms slide up with fade */
+.animate-slide-in-right  /* 300ms slide from right */
 
-/* Panel open/close */
-transition: transform 200ms ease-out, opacity 150ms ease-out;
-
-/* Status pulse */
-animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+/* Stagger delays */
+.stagger-1 through .stagger-5  /* 50ms increments */
 ```
 
-### Motion Principles
-1. Quick responses (150-200ms) for interactions
-2. Smooth easing for panels and drawers
-3. Subtle pulse for live status indicators
-4. Spring physics for 3D camera movements
+## Transitions
+
+```css
+--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+--ease-in-out-expo: cubic-bezier(0.87, 0, 0.13, 1);
+--duration-instant: 50ms;
+--duration-fast: 150ms;
+--duration-normal: 300ms;
+--duration-slow: 500ms;
+```
+
+## Motion Principles
+
+1. **Quick responses** (150ms) for hover/click feedback
+2. **Expo easing** for smooth, physics-like movement
+3. **Pulse animations** for live status indicators
+4. **Staggered reveals** for list items
+5. **Spring physics** for 3D camera movements
 
 ## Accessibility
 
-- Maintain WCAG 2.1 AA contrast ratios
-- All interactive elements must be keyboard accessible
-- Focus indicators use `ring-2 ring-accent-primary ring-offset-2 ring-offset-bg-primary`
+- Maintain WCAG 2.1 AA contrast ratios (particle colors are designed for this)
+- All interactive elements keyboard accessible
+- Focus indicators: `outline: 1px solid var(--particle-cyan); outline-offset: 2px;`
 - Status changes announced to screen readers
+- Reduced motion: Respect `prefers-reduced-motion`
+
+## SVG Patterns
+
+### Detector Rings
+```tsx
+<svg viewBox="0 0 400 400">
+  {[160, 140, 120, 100, 80].map((r, i) => (
+    <circle
+      key={i}
+      cx="200" cy="200" r={r}
+      stroke="var(--wire-dim)"
+      strokeWidth="1"
+      fill="none"
+      opacity={0.5 - i * 0.08}
+    />
+  ))}
+</svg>
+```
+
+### Sector Lines
+```tsx
+{Array.from({ length: 12 }).map((_, i) => {
+  const angle = (i * 30 * Math.PI) / 180;
+  return (
+    <line
+      x1={200 + 60 * Math.cos(angle)}
+      y1={200 + 60 * Math.sin(angle)}
+      x2={200 + 165 * Math.cos(angle)}
+      y2={200 + 165 * Math.sin(angle)}
+      stroke="var(--wire-dim)"
+      strokeWidth="1"
+      opacity="0.3"
+    />
+  );
+})}
+```
