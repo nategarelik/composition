@@ -10,6 +10,7 @@ export interface LayoutNode {
   parentX?: number;
   parentY?: number;
   depth: number;
+  path: string; // Tree path for expansion tracking (e.g., 'root', 'root.children[0]')
 }
 
 /**
@@ -35,13 +36,18 @@ export function useRadialLayout(
     const centerY = height / 2;
     const radius = Math.min(width, height) / 2 - 100;
 
-    // Build hierarchy with only expanded nodes
-    const filterChildren = (node: CompositionNode, path: string): CompositionNode => {
+    // Build hierarchy with only expanded nodes, tracking path
+    interface NodeWithPath extends CompositionNode {
+      __path?: string;
+    }
+
+    const filterChildren = (node: CompositionNode, path: string): NodeWithPath => {
+      const nodeWithPath: NodeWithPath = { ...node, __path: path };
       if (!node.children || !expandedPaths.has(path)) {
-        return { ...node, children: undefined };
+        return { ...nodeWithPath, children: undefined };
       }
       return {
-        ...node,
+        ...nodeWithPath,
         children: node.children.map((child, i) =>
           filterChildren(child, `${path}.children[${i}]`)
         ),
@@ -90,6 +96,7 @@ export function useRadialLayout(
         parentX,
         parentY,
         depth: d.depth,
+        path: (d.data as NodeWithPath).__path || 'root',
       });
     });
 

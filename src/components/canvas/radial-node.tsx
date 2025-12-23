@@ -23,15 +23,14 @@ interface RadialNodeProps {
 }
 
 export function RadialNode({ layoutNode }: RadialNodeProps) {
-  const { node, x, y } = layoutNode;
+  const { node, x, y, path } = layoutNode;
 
   const selectedNode = useCompositionStore((s) => s.selectedNode);
   const selectNode = useCompositionStore((s) => s.selectNode);
   const setHoveredNode = useCompositionStore((s) => s.setHoveredNode);
   const toggleExpandedPath = useCompositionStore((s) => s.toggleExpandedPath);
 
-  // Build path from node
-  const nodePath = `node-${node.id}`;
+  // Use the tree path from layout for expansion tracking
   const isSelected = selectedNode?.id === node.id;
 
   const color = NODE_COLORS[node.type] || '#888888';
@@ -44,7 +43,7 @@ export function RadialNode({ layoutNode }: RadialNodeProps) {
 
   const handleDoubleClick = () => {
     if (hasChildren) {
-      toggleExpandedPath(nodePath);
+      toggleExpandedPath(path);
     }
   };
 
