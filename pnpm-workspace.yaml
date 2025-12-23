@@ -1,7 +1,9 @@
-# Allow packages to run their postinstall scripts
-onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
-  - prisma
-  - sharp
-  - unrs-resolver
+# pnpm 10+ uses allowBuilds instead of onlyBuiltDependencies
+# This allows packages to run their postinstall/build scripts
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+  esbuild: true
